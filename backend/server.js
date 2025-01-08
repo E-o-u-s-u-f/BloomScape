@@ -17,4 +17,3 @@ app.listen(5000,() =>{
     connectDB();
     console.log("server statred at http://localhost:5000");
 });
-//LClUvF0zLo7Ja2by  npm install mongodb
