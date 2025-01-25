@@ -1,0 +1,140 @@
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.profileIcon {
+  margin-right: 12px;
+  color: #6c757d;
+}
+
+.userDetails {
+  flex: 1;
+}
+
+.userNameAndFollow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.userName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.followButton {
+  background: none;
+  border: 1px solid #d6d6d6;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.followButton:hover {
+  background-color: #d6d6d6;
+  color: #000000;
+  border-color: #b0b0b0;
+}
+
+.followButton:focus {
+  outline: none;
+}
+
+.time {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #999999;
+}
+
+.content {
+  padding: 16px;
+  font-size: 14px;
+  color: #4a4a4a;
+  line-height: 1.6;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+}
+
+.button {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #d6d6d6;
+  color: #000000;
+}
+
+.button:focus {
+  outline: none;
+}
+
+@media screen and (max-width: 768px) {
+  .card {
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .content {
+    font-size: 13px;
+  }
+
+  .button {
+    font-size: 13px;
+  }
+
+  .followButton {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+}
