@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar.jsx";
 import { useColorModeValue } from "@chakra-ui/react";
 import Login from "./pages/login.jsx";
 import SignUp from "./pages/SignnUp.jsx";
+import Chat from "./pages/Chatpage.jsx";
 
 function App() {
   const location = useLocation();
@@ -18,10 +19,13 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/chat" element={<Chat />} />
 
       </Routes>
+      
     </Box>
   );
 }
 
 export default App;
+

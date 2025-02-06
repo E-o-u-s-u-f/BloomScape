@@ -27,7 +27,10 @@ const CFaEnvelope = chakra(FaEnvelope);
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
+  //const[name,setName]=useState();
+  //const [mail,setMail]=useState();
+  //const [password,setPassword]=useState();
+  
 
   const handleShowClick = () => setShowPassword(!showPassword);
 
