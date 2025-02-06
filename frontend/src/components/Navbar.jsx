@@ -21,10 +21,14 @@ import { IoMoon } from "react-icons/io5";
 import { LuSun } from "react-icons/lu";
 import logo from "../assets/kkk[1].png";
 import { IoMdChatboxes } from "react-icons/io";
+import { useState } from "react";  
+import Chat from "../pages/Chatpage";
+import { IoMdMenu } from "react-icons/io";
 
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenchat, onOpen: onOpenchat, onClose: onClosechat } = useDisclosure();
 
   return (
     <Box
@@ -42,7 +46,7 @@ const Navbar = () => {
           justifyContent={"space-between"}
         >
           <HStack spacing={4} alignItems="center">
-            <Button onClick={onOpen}>Menu</Button> 
+            <Button onClick={onOpen}><IoMdMenu/></Button> 
             <HStack spacing={2}>
               <img
                 src={logo}
@@ -74,11 +78,9 @@ const Navbar = () => {
           </Flex>
 
           <HStack spacing={4} alignItems={"center"}> 
-            <Link to={"/create"}>
-              <Button>
-                <IoMdChatboxes fontSize={20} />
-              </Button>
-            </Link>
+          <Button onClick={onOpenchat} colorScheme="teal" variant="outline" width="auto">
+              <IoMdChatboxes size={20}/>
+            </Button>
             <Link to="/signup">
               <Button colorScheme="teal" variant="outline" width="auto">
                 Sign Up
@@ -95,6 +97,7 @@ const Navbar = () => {
           </HStack> 
         </Flex>
       </Container>
+      {isOpenchat && <Chat isOpen={isOpenchat} onClose={onClosechat} />}
 
       
       <Drawer isOpen={isOpen} placement="left" onClose={onClose}>

@@ -3,7 +3,6 @@ import React from "react";
 import PostCard from "../components/PostCard"
 import "../App.css";
 
-
 const HomePage = () => {
   const posts = [
     {
@@ -33,16 +32,32 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="App">
-      {posts.map((post, index) => (
+    <div className="App " style={{
+
+    }}>
+      <div style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}>
+        {posts.map((post, index) => (
         <PostCard
           key={index}
           profileName={post.profileName}
           time={post.time}
           content={post.content}
           imageUrl={post.imageUrl}
+
         />
-      ))}
+      )) }
+      </div>
+      <div style={{
+             position: "fixed", /* or relative, fixed, or sticky based on your needs */
+             top: "120px", /* Distance from the top edge (y-axis) */
+             left: "1150px", /* Distance from the left edge (x-axis) */
+           }}>
+      </div>
+      
     </div>
   );
 };
