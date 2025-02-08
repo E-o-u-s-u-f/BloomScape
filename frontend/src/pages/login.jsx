@@ -19,6 +19,8 @@ import { FaUserAlt, FaLock } from "react-icons/fa";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import axios from "axios";
+import { useEffect } from "react";
 
 // Chakra UI-wrapped icons
 const CFaUserAlt = chakra(FaUserAlt);
@@ -39,11 +41,33 @@ const Login = () => {
     password: Yup.string().min(4, "Password must be at least 4 characters").required("Password is required"),
   });
 
-  const handleSubmit = (values) => {
-    console.log("Login Submitted", values);
-    navigate("/"); // Redirect to homepage
-  };
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/"); // Redirect to home page if already logged in
+    }
+  }, [navigate]);
 
+
+
+  const handleSubmit = async (values) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/login", {
+        email: values.email,
+        password: values.password,
+      });
+
+      if (response.data.success) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        navigate("/"); // Redirect after successful login
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Something went wrong.");
+    }
+  };
+  
   return (
     <Flex
       flexDirection="column"
@@ -62,25 +86,33 @@ const Login = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            <Form>
+            <Form  autoComplete="off">
               <Stack spacing={4} p="1rem" backgroundColor="white" boxShadow="md" borderRadius="md">
                 {/* Email Input */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                      <CFaUserAlt color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type="email"
-                      name="email"
-                      placeholder="Email address"
-                      focusBorderColor="teal.500"
-                      paddingLeft="3rem" // Ensure space for icon
-                    />
-                  </InputGroup>
-                  <ErrorMessage name="email" component="div" style={{ color: "red" }} />
-                </FormControl>
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaUserAlt color="gray.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        type="email"
+                        name="email"
+                        placeholder="Email address"
+                        focusBorderColor="teal.500" 
+                        paddingLeft="3rem"
+                        color="black" 
+                        _placeholder={{ color: "gray.500" }} 
+                        borderColor="teal" 
+                        borderWidth="2px"
+                        _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                        _hover={{ borderColor: "teal.500" }}
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+                    <ErrorMessage name="email" component="div" style={{ color: "red" }} />
+                  </FormControl>
+
 
                 {/* Password Input */}
                 <FormControl>
@@ -95,6 +127,13 @@ const Login = () => {
                       placeholder="Password"
                       focusBorderColor="teal.500"
                       paddingLeft="3rem"
+                      color="black" 
+                        _placeholder={{ color: "gray.500" }} 
+                        borderColor="teal" 
+                        borderWidth="2px"
+                        _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                        _hover={{ borderColor: "teal.500" }}
+                        autoComplete="off"
                     />
                     <InputRightElement width="4rem">
                       <Button h="1.75rem" size="sm" onClick={handleShowClick} colorScheme="teal">

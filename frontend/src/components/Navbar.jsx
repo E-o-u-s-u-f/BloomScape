@@ -21,15 +21,30 @@ import { IoMoon } from "react-icons/io5";
 import { LuSun } from "react-icons/lu";
 import logo from "../assets/kkk[1].png";
 import { IoMdChatboxes } from "react-icons/io";
-import { useState } from "react";  
+import { useEffect, useState } from "react";
 import Chat from "../pages/Chatpage";
 import { IoMdMenu } from "react-icons/io";
+import { Avatar, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenchat, onOpen: onOpenchat, onClose: onClosechat } = useDisclosure();
-
+  
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem("user"); 
+    setUser(null); 
+    navigate("/login"); 
+  };
   return (
     <Box
       bg={colorMode === "light" ? "white" : "gray.800"} 
@@ -81,16 +96,28 @@ const Navbar = () => {
           <Button onClick={onOpenchat} colorScheme="teal" variant="outline" width="auto">
               <IoMdChatboxes size={20}/>
             </Button>
-            <Link to="/signup">
-              <Button colorScheme="teal" variant="outline" width="auto">
-                Sign Up
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button colorScheme="teal" variant="solid" width="auto">
-                Log In
-              </Button>
-            </Link>
+
+            {user ? (
+              <Menu>
+                <MenuButton as={Button} rounded={"full"} variant={"link"} cursor={"pointer"}>
+                  <Avatar name={user.name} src={user.profilePicture || ""} />
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                </MenuList>
+              </Menu>
+            ) : (
+              <>
+                <Link to="/signup">
+                  <Button colorScheme="teal" variant="outline">Sign Up</Button>
+                </Link>
+                <Link to="/login">
+                  <Button colorScheme="teal" variant="solid">Log In</Button>
+                </Link>
+              </>
+            )}
+            
             <Button onClick={toggleColorMode}>
               {colorMode === "light" ? <IoMoon /> : <LuSun size="20" />}
             </Button>

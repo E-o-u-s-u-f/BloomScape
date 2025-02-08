@@ -50,17 +50,18 @@ const SignUp = () => {
   });
   
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, { resetForm }) => {
     console.log("Sign Up Submitted", values);
     try {
       const response = await axios.post("http://localhost:5000/api/users", values);
       console.log("User created:", response.data);
+      navigate("/"); 
+      resetForm();
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
     }
-    navigate("/");
+    
   };
-  
 
   return (
     <Flex
@@ -90,7 +91,7 @@ const SignUp = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            <Form>
+            <Form  autoComplete="off">
               <Stack
                 spacing={4}
                 p="1rem"
@@ -112,6 +113,13 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
+                      color="black" 
+                      _placeholder={{ color: "gray.500" }} 
+                      borderColor="teal" 
+                      borderWidth="2px"
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _hover={{ borderColor: "teal.500" }}
+                      autoComplete="off"
                     />
                   </InputGroup>
                   <ErrorMessage name="fullName" component="div" style={{ color: "red" }} />
@@ -131,6 +139,13 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
+                      color="black" 
+                      _placeholder={{ color: "gray.500" }} 
+                      borderColor="teal" 
+                      borderWidth="2px"
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _hover={{ borderColor: "teal.500" }}
+                      autoComplete="off"
                     />
                   </InputGroup>
                   <ErrorMessage name="email" component="div" style={{ color: "red" }} />
@@ -150,6 +165,13 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
+                      color="black" 
+                      _placeholder={{ color: "gray.500" }} 
+                      borderColor="teal" 
+                      borderWidth="2px"
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _hover={{ borderColor: "teal.500" }}
+                      autoComplete="off"
                     />
                     <InputRightElement width="4rem">
                       <Button
@@ -180,6 +202,13 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
+                      color="black" 
+                      _placeholder={{ color: "gray.500" }} 
+                      borderColor="teal" 
+                      borderWidth="2px"
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _hover={{ borderColor: "teal.500" }}
+                      autoComplete="off"
                     />
                   </InputGroup>
                   <ErrorMessage name="confirmPassword" component="div" style={{ color: "red" }} />
@@ -200,7 +229,7 @@ const SignUp = () => {
         </Box>
       </Stack>
 
-      <Box>
+      <Box color={"blackAlpha.500"}>
         Already have an account?{" "}
         <Link as={RouterLink} to="/login" color="teal.500">
           Login

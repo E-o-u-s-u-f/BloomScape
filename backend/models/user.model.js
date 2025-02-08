@@ -8,27 +8,27 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true // Ensure email is unique
+        unique: true 
     },
     password: {
         type: String,
         required: true
     },
     profilePicture: {
-        type: String, // URL of profile picture
-        default: "https://example.com/default-profile.png" // Default image
+        type: String, 
+        default: "https://example.com/default-profile.png"
     },
     bio: {
         type: String,
-        default: "" // Optional bio, can be updated later
+        default: "" 
     },
     role: {
         type: String,
-        enum: ["user", "admin"], // Possible roles
-        default: "user" // Defaults to "user", but can be changed later
+        enum: ["user", "admin"], 
+        default: "user" 
     }
 }, {
-    timestamps: true // Automatically adds createdAt & updatedAt
+    timestamps: true 
 });
 
 const User = mongoose.model('User', userSchema);

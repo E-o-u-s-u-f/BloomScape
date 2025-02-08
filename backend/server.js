@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import User from "./models/user.model.js";
 import cors from "cors";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 dotenv.config();
 
 const app=express();
@@ -28,6 +30,32 @@ app.post("/api/users", async(req,res) => {
     }
 
 });
+
+
+app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Check if the user exists
+        const user = await User.findOne({ email });
+        console.log("User found:", user);
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+
+        // Directly compare the plain text password (not secure, for illustration only)
+        if (user.password !== password) {
+            return res.status(400).json({ success: false, message: "Invalid credentials" });
+        }
+
+        // Send a simple response indicating the user has logged in successfully
+        res.status(200).json({ success: true, user });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
 
 app.listen(5000,() =>{
     connectDB();
