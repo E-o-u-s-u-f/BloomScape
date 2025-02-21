@@ -6,6 +6,11 @@ import { useColorModeValue } from "@chakra-ui/react";
 import Login from "./pages/login.jsx";
 import SignUp from "./pages/SignnUp.jsx";
 import Chat from "./pages/Chatpage.jsx";
+import Post from "./pages/Post.jsx";
+import ProfileCard from "./components/ProfileCard.jsx";
+import Articles from "./pages/Articles.jsx";
+import ArticleDetail from "./components/ArticleDetail.jsx";
+import AdminPanel from "./components/AdminPanel.jsx";
 
 function App() {
   const location = useLocation();
@@ -20,12 +25,14 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/chat" element={<Chat />} />
-
+        <Route path="/create" element={<Post />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/ProfileCard" element={<ProfileCard />} />
+        <Route path="/articles" element={<Articles />} />
+        <Route path="/articles/:id" element={<ArticleDetail />} />
       </Routes>
-      
     </Box>
   );
 }
 
 export default App;
-

@@ -30,16 +30,18 @@ const SignUp = () => {
   //const[name,setName]=useState();
   //const [mail,setMail]=useState();
   //const [password,setPassword]=useState();
-  
 
   const handleShowClick = () => setShowPassword(!showPassword);
 
-  // Yup validation schema
+  
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Full Name is required"),
     email: Yup.string()
       .email("Invalid email address")
-      .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Email must be a Gmail address")
+      .matches(
+        /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+        "Email must be a Gmail address"
+      )
       .required("Email is required"),
     password: Yup.string()
       .min(4, "Password must be at least 4 characters")
@@ -48,19 +50,20 @@ const SignUp = () => {
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm Password is required"),
   });
-  
 
   const handleSubmit = async (values, { resetForm }) => {
     console.log("Sign Up Submitted", values);
     try {
-      const response = await axios.post("http://localhost:5000/api/users", values);
+      const response = await axios.post(
+        "http://localhost:5000/api/users",
+        values
+      );
       console.log("User created:", response.data);
-      navigate("/"); 
+      navigate("/");
       resetForm();
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
     }
-    
   };
 
   return (
@@ -91,7 +94,7 @@ const SignUp = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            <Form  autoComplete="off">
+            <Form autoComplete="off">
               <Stack
                 spacing={4}
                 p="1rem"
@@ -102,7 +105,12 @@ const SignUp = () => {
                 {/* Full Name */}
                 <FormControl>
                   <InputGroup>
-                    <InputLeftElement pointerEvents="none" width="3rem" justifyContent="center" alignItems="center">
+                    <InputLeftElement
+                      pointerEvents="none"
+                      width="3rem"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
                       <CFaUserAlt color="gray.500" />
                     </InputLeftElement>
                     <Field
@@ -113,22 +121,31 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
-                      color="black" 
-                      _placeholder={{ color: "gray.500" }} 
-                      borderColor="teal" 
+                      color="black"
+                      _placeholder={{ color: "gray.500" }}
+                      borderColor="teal"
                       borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
                       _hover={{ borderColor: "teal.500" }}
                       autoComplete="off"
                     />
                   </InputGroup>
-                  <ErrorMessage name="fullName" component="div" style={{ color: "red" }} />
+                  <ErrorMessage
+                    name="fullName"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
                 </FormControl>
 
                 {/* Email */}
                 <FormControl>
                   <InputGroup>
-                    <InputLeftElement pointerEvents="none" width="3rem" justifyContent="center" alignItems="center">
+                    <InputLeftElement
+                      pointerEvents="none"
+                      width="3rem"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
                       <CFaEnvelope color="gray.500" />
                     </InputLeftElement>
                     <Field
@@ -139,22 +156,31 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
-                      color="black" 
-                      _placeholder={{ color: "gray.500" }} 
-                      borderColor="teal" 
+                      color="black"
+                      _placeholder={{ color: "gray.500" }}
+                      borderColor="teal"
                       borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
                       _hover={{ borderColor: "teal.500" }}
                       autoComplete="off"
                     />
                   </InputGroup>
-                  <ErrorMessage name="email" component="div" style={{ color: "red" }} />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
                 </FormControl>
 
                 {/* Password */}
                 <FormControl>
                   <InputGroup>
-                    <InputLeftElement pointerEvents="none" width="3rem" justifyContent="center" alignItems="center">
+                    <InputLeftElement
+                      pointerEvents="none"
+                      width="3rem"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
                       <CFaLock color="gray.500" />
                     </InputLeftElement>
                     <Field
@@ -165,11 +191,11 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
-                      color="black" 
-                      _placeholder={{ color: "gray.500" }} 
-                      borderColor="teal" 
+                      color="black"
+                      _placeholder={{ color: "gray.500" }}
+                      borderColor="teal"
                       borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
                       _hover={{ borderColor: "teal.500" }}
                       autoComplete="off"
                     />
@@ -184,14 +210,23 @@ const SignUp = () => {
                       </Button>
                     </InputRightElement>
                   </InputGroup>
-                  
-                  <ErrorMessage name="password" component="div" style={{ color: "red" }} />
+
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
                 </FormControl>
 
                 {/* Confirm Password */}
                 <FormControl>
                   <InputGroup>
-                    <InputLeftElement pointerEvents="none" width="3rem" justifyContent="center" alignItems="center">
+                    <InputLeftElement
+                      pointerEvents="none"
+                      width="3rem"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
                       <CFaLock color="gray.500" />
                     </InputLeftElement>
                     <Field
@@ -202,16 +237,20 @@ const SignUp = () => {
                       required
                       focusBorderColor="teal.500"
                       paddingLeft="3.5rem" // To ensure space for icon
-                      color="black" 
-                      _placeholder={{ color: "gray.500" }} 
-                      borderColor="teal" 
+                      color="black"
+                      _placeholder={{ color: "gray.500" }}
+                      borderColor="teal"
                       borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }} 
+                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
                       _hover={{ borderColor: "teal.500" }}
                       autoComplete="off"
                     />
                   </InputGroup>
-                  <ErrorMessage name="confirmPassword" component="div" style={{ color: "red" }} />
+                  <ErrorMessage
+                    name="confirmPassword"
+                    component="div"
+                    style={{ color: "red" }}
+                  />
                 </FormControl>
 
                 <Button

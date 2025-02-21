@@ -1,0 +1,42 @@
+.footer-container {
+  width: 100vw; /* Makes footer span the full width */
+  text-align: center;
+  background-color: #222;
+  padding: 20px;
+  border-top: 1px solid var(--chakra-colors-gray-300);
+  position: relative; /* Ensures it's part of normal flow */
+  bottom: 0;
+  left: 0;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: var(--chakra-colors-gray-900);
+}
+
+.footer-motto {
+  display: block; /* Ensures it takes full width */
+  font-style: italic;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.footer-rights {
+  display: block; /* Ensures it moves to a new line */
+  font-size: 14px;
+  color: white;
+  margin-top: 5px; /* Adds spacing between motto and rights */
+}
