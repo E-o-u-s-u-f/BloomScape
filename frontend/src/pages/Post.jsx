@@ -1,19 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import "./Post.css";
 import { FaSmile } from "react-icons/fa";
+import { MdCancel } from "react-icons/md"; // Import cancel icon
 import Picker from "emoji-picker-react";
 import { useToast } from "@chakra-ui/react";
+import "./Post.css";
 
 export default function Post() {
-  const [imageFiles, setImageFiles] = useState([]); 
+  const [imageFiles, setImageFiles] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [existingContents, setExistingContents] = useState([]); 
+  const [existingContents, setExistingContents] = useState([]);
   const fileInputRef = useRef(null);
   const toast = useToast();
 
-  // Fetch existing post contents on component mount
   useEffect(() => {
     fetch("http://localhost:5000/api/multiple/cloud/contents")
       .then((res) => res.json())
@@ -21,17 +21,23 @@ export default function Post() {
       .catch((error) => console.error("Error fetching contents:", error));
   }, []);
 
-  // Yup validation schema
   const validationSchema = Yup.object({
-    profileName: Yup.string().min(3, "Must be at least 3 characters").required("Required"),
-    title: Yup.string().min(3, "Title must be at least 5 characters").required("Required"),
+    profileName: Yup.string()
+      .min(3, "Must be at least 3 characters")
+      .required("Required"),
+    title: Yup.string()
+      .min(3, "Title must be at least 5 characters")
+      .required("Required"),
     content: Yup.string()
       .min(10, "Post must be at least 10 characters")
-      .test("is-duplicate", "Content already exists", (value) => !existingContents.includes(value))
+      .test(
+        "is-duplicate",
+        "Content already exists",
+        (value) => !existingContents.includes(value)
+      )
       .required("Required"),
   });
 
- 
   const formik = useFormik({
     initialValues: { profileName: "", title: "", content: "" },
     validationSchema,
@@ -43,10 +49,13 @@ export default function Post() {
       formData.append("content", values.content);
 
       try {
-        const response = await fetch("http://localhost:5000/api/multiple/cloud", {
-          method: "POST",
-          body: formData,
-        });
+        const response = await fetch(
+          "http://localhost:5000/api/multiple/cloud",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         const data = await response.json();
         if (response.ok) {
@@ -86,10 +95,13 @@ export default function Post() {
     },
   });
 
-  
   const handleImageChange = (event) => {
     const files = Array.from(event.target.files);
-    setImageFiles(files);
+    setImageFiles((prevImages) => [...prevImages, ...files]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setImageFiles((prevImages) => prevImages.filter((_, i) => i !== index));
   };
 
   return (
@@ -126,29 +138,45 @@ export default function Post() {
             <div className="error-message">{formik.errors.content}</div>
           )}
 
-          {/* Image Previews */}
+          {/* Image Previews with Remove Button */}
           {imageFiles.length > 0 && (
             <div className="post-image-preview">
               {imageFiles.map((image, index) => (
-                <img key={index} src={URL.createObjectURL(image)} alt={`Preview ${index}`} className="post-image" />
+                <div key={index} className="image-preview-wrapper">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={`Preview ${index}`}
+                    className="post-image"
+                  />
+                  <button
+                    className="remove-image-button"
+                    onClick={() => handleRemoveImage(index)}
+                  >
+                    <MdCancel size={20} color="red" />
+                  </button>
+                </div>
               ))}
             </div>
           )}
 
           <div className="post-options">
             <div className="post-buttons">
-              {/* Custom Choose File Button */}
-              <button type="button" className="post-photo" onClick={() => fileInputRef.current.click()}>
+              <button
+                type="button"
+                className="post-photo"
+                onClick={() => fileInputRef.current.click()}
+              >
                 Choose File
               </button>
-
-              {/* Feeling/Activity Button */}
-              <button type="button" className="post-feeling" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+              <button
+                type="button"
+                className="post-feeling"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
                 <FaSmile /> Feeling/Activity
               </button>
             </div>
 
-            {/* Hidden File Input */}
             <input
               type="file"
               accept="image/*"
@@ -159,9 +187,22 @@ export default function Post() {
             />
           </div>
 
-          {showEmojiPicker && <Picker onEmojiClick={(emojiObject) => formik.setFieldValue("content", formik.values.content + emojiObject.emoji)} />}
+          {showEmojiPicker && (
+            <Picker
+              onEmojiClick={(emojiObject) =>
+                formik.setFieldValue(
+                  "content",
+                  formik.values.content + emojiObject.emoji
+                )
+              }
+            />
+          )}
 
-          <button type="submit" className="post-submit" disabled={!formik.isValid || formik.isSubmitting}>
+          <button
+            type="submit"
+            className="post-submit"
+            disabled={!formik.isValid || formik.isSubmitting}
+          >
             Post
           </button>
         </form>

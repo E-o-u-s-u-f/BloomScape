@@ -150,6 +150,32 @@ body {
 .post-submit:hover:not(:disabled) {
   background: #165dd9;
 }
+
+.image-preview-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 5px;
+}
+
+.post-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+}
+
+.remove-image-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 2px;
+}
+
 @media (max-width: 600px) {
   .post-container {
     padding: 10px;
