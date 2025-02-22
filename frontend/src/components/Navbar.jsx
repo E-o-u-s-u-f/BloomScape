@@ -6,7 +6,6 @@ import {
   Button,
   Box,
   useColorMode,
-  Input,
   useDisclosure,
   Drawer,
   DrawerBody,
@@ -28,7 +27,7 @@ import { IoMdChatboxes, IoMdMenu } from "react-icons/io";
 import { useEffect, useState } from "react";
 import Chat from "../pages/Chatpage";
 import logo from "../assets/kkk[1].png";
-
+import SearchBox from "./SearchBox"; // Import the SearchBox component
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -89,13 +88,9 @@ const Navbar = () => {
               </HStack>
             </HStack>
 
-            <Flex flex="1" justifyContent="center" mx={4}>
-              <Input
-                placeholder="Search..."
-                size="lg"
-                width={{ base: "90%", sm: "70%", md: "50%" }}
-                variant="outline"
-              />
+            {/* Place SearchBox component here */}
+            <Flex flex="1" justifyContent="center"  mx={4}>
+              <SearchBox />
             </Flex>
 
             <HStack spacing={4} alignItems="center">
@@ -223,7 +218,6 @@ const Navbar = () => {
                 Admin
               </Button>
             </Link>
-           
           </DrawerBody>
 
           <DrawerFooter>

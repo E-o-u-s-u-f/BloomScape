@@ -3,14 +3,25 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
 import User from "./models/user.model.js";
 import cors from "cors";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { v2 as cloudinary } from "cloudinary";
+import multipleuploads from "./multipleuploads.js"
 dotenv.config();
 
 const app=express();
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+  });
+
+
+app.use("/api/multiple",multipleuploads);
 
 app.post("/api/users", async(req,res) => {
     const user = req.body;//user will send this data
