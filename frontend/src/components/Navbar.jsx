@@ -223,16 +223,7 @@ const Navbar = () => {
                 Admin
               </Button>
             </Link>
-            <Link to="/signup">
-              <Button w="100%" mb={4}>
-                Sign Up
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button w="100%" mb={4}>
-                Log In
-              </Button>
-            </Link>
+           
           </DrawerBody>
 
           <DrawerFooter>
