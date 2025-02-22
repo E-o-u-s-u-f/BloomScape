@@ -4,12 +4,12 @@ import { connectDB } from "./config/db.js";
 import User from "./models/user.model.js";
 import cors from "cors";
 import { v2 as cloudinary } from "cloudinary";
-import singleUpload from "./singleUpload.js";
 import multipleuploads from "./multipleuploads.js"
 dotenv.config();
 
 const app=express();
 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
@@ -20,7 +20,7 @@ cloudinary.config({
     secure: true,
   });
 
-app.use("/api/single",singleUpload);
+
 app.use("/api/multiple",multipleuploads);
 
 app.post("/api/users", async(req,res) => {

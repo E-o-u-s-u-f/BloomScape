@@ -1,5 +1,39 @@
 /* FacebookPostCreate.css - Modern Stylish Design */
 
+.post-title-input, .post-name-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  color: #333;
+  transition: border 0.3s ease;
+}
+
+.post-title-input:focus, .post-name-input:focus {
+  border-color: #1877f2;
+  box-shadow: 0 0 6px rgba(24, 119, 242, 0.4);
+}
+
+.post-image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.post-image-preview img {
+  width: 48%;  /* Adjust size to fit multiple images in a row */
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+}
+.post-title-input::placeholder, .post-name-input::placeholder, .post-textarea::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+
 body {
   background-color: #f0f2f5;
   font-family: "Arial", sans-serif;
@@ -116,3 +150,27 @@ body {
 .post-submit:hover:not(:disabled) {
   background: #165dd9;
 }
+@media (max-width: 600px) {
+  .post-container {
+    padding: 10px;
+  }
+
+  .post-card {
+    padding: 12px;
+  }
+
+  .post-options {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .post-buttons {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .post-submit {
+    font-size: 14px;
+  }
+}
+
