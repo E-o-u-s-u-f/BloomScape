@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUserCircle,
@@ -6,10 +6,30 @@ import {
   faComment,
   faBookmark,
   faUserPlus,
+  faChevronLeft,
+  faChevronRight,
+  faCheck
 } from "@fortawesome/free-solid-svg-icons";
 import "./PostCard.css";
 
-const PostCard = ({ profileName, time, content, imageUrl }) => {
+const PostCard = ({ profileName, time, content, imageUrls }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing);
+  };
+
+  const nextImage = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? imageUrls.length - 1 : prevIndex - 1
+    );
+  };
+
   return (
     <div className="card">
       <div className="header">
@@ -19,9 +39,12 @@ const PostCard = ({ profileName, time, content, imageUrl }) => {
         <div className="userDetails">
           <div className="userNameAndFollow">
             <h3 className="userName">{profileName}</h3>
-            <button className="followButton">
-              <FontAwesomeIcon icon={faUserPlus} />
-              Follow
+            <button
+              className={`followButton ${isFollowing ? "following" : ""}`}
+              onClick={handleFollow}
+            >
+              <FontAwesomeIcon icon={isFollowing ? faCheck : faUserPlus} />
+              {isFollowing ? "Following" : "Follow"}
             </button>
           </div>
           <p className="time">{time}</p>
@@ -30,10 +53,20 @@ const PostCard = ({ profileName, time, content, imageUrl }) => {
       <div className="content">
         <p>{content}</p>
       </div>
-      <img src={imageUrl} alt="Post" className="image" />
+      {imageUrls.length > 0 && (
+        <div className="image-carousel">
+          <button className="carousel-button left" onClick={prevImage}>
+            <FontAwesomeIcon icon={faChevronLeft} />
+          </button>
+          <img src={imageUrls[currentIndex]} alt="Post" className="image" />
+          <button className="carousel-button right" onClick={nextImage}>
+            <FontAwesomeIcon icon={faChevronRight} />
+          </button>
+        </div>
+      )}
       <div className="footer">
         <button className="button">
-          <FontAwesomeIcon icon={faHeart} size="1x" /> Like
+          <FontAwesomeIcon icon={faHeart} /> Like
         </button>
         <button className="button">
           <FontAwesomeIcon icon={faComment} /> Comment

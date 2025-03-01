@@ -206,17 +206,22 @@ const Navbar = () => {
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>Menu</DrawerHeader>
-
           <DrawerBody>
             <Link to="/create">
-              <Button w="100%" mb={4}>
-                Create
-              </Button>
+              <Button w="100%" mb={4}>Create</Button>
+            </Link>
+            <Link to="/aboutus">
+              <Button w="100%" mb={4}>About Us</Button>
+            </Link>
+                <Link to="/resources">
+
+              <Button w="100%" mb={4}>Resource</Button>
+            </Link>
+            <Link to="/event">
+              <Button w="100%" mb={4}>Events</Button>
             </Link>
             <Link to="/admin">
-              <Button w="100%" mb={4}>
-                Admin
-              </Button>
+              <Button w="100%" mb={4}>Admin</Button>
             </Link>
           </DrawerBody>
 
