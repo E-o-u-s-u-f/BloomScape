@@ -27,13 +27,9 @@ const CFaEnvelope = chakra(FaEnvelope);
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  //const[name,setName]=useState();
-  //const [mail,setMail]=useState();
-  //const [password,setPassword]=useState();
 
   const handleShowClick = () => setShowPassword(!showPassword);
 
-  
   const validationSchema = Yup.object({
     fullName: Yup.string().required("Full Name is required"),
     email: Yup.string()
@@ -50,19 +46,19 @@ const SignUp = () => {
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm Password is required"),
   });
-
   const handleSubmit = async (values, { resetForm }) => {
-    console.log("Sign Up Submitted", values);
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/users",
-        values
-      );
-      console.log("User created:", response.data);
-      navigate("/");
+      const response = await axios.post("http://localhost:5000/api/users", {
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
+      });
+      
+      alert(response.data.message);
+      navigate(`/otp-verification?email=${encodeURIComponent(values.email)}`);
       resetForm();
     } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Something went wrong");
     }
   };
 

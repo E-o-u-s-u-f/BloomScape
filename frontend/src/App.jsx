@@ -11,14 +11,19 @@ import ProfileCard from "./components/ProfileCard.jsx";
 import Articles from "./pages/Articles.jsx";
 import ArticleDetail from "./components/ArticleDetail.jsx";
 import AdminPanel from "./components/AdminPanel.jsx";
+import OTPVerification from "./pages/otp.jsx";
 
 function App() {
   const location = useLocation();
+  
+  // Add "/otp-verification" to the routes where Navbar should not appear
+  const routesWithoutNavbar = ["/login", "/signup", "/otp-verification"];
+  const showNavbar = !routesWithoutNavbar.includes(location.pathname);
 
   return (
     <Box minH={"100vh"} bg={useColorModeValue("gray.100", "gray.900")}>
-      {/* Conditionally render Navbar only if the current route is not "/login" */}
-      {!["/login", "/signup"].includes(location.pathname) && <Navbar />}
+      {/* Only show Navbar when showNavbar is true */}
+      {showNavbar && <Navbar />}
 
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -31,6 +36,7 @@ function App() {
         <Route path="/ProfileCard" element={<ProfileCard />} />
         <Route path="/articles" element={<Articles />} />
         <Route path="/articles/:id" element={<ArticleDetail />} />
+        <Route path="/otp-verification" element={<OTPVerification />} />
       </Routes>
     </Box>
   );
