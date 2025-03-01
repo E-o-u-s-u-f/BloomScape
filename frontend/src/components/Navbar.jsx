@@ -20,15 +20,19 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
+import { useAuth } from "../Context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { IoMoon } from "react-icons/io5";
 import { LuSun } from "react-icons/lu";
 import { IoMdChatboxes, IoMdMenu } from "react-icons/io";
 import { useEffect, useState } from "react";
-import Chat from "../pages/Chatpage";
+import Chat from "../Chat/Chatpage";
 import logo from "../assets/kkk[1].png";
 import SearchBox from "./SearchBox"; // Import the SearchBox component
 const Navbar = () => {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const {logout} =useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -37,8 +41,7 @@ const Navbar = () => {
     onClose: onClosechat,
   } = useDisclosure();
 
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -46,13 +49,16 @@ const Navbar = () => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
-
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+    // Clear the JWT token from localStorage
+    localStorage.removeItem("authToken");
+  
+    // Optionally, clear user state if you're using context
+    setAuthUser(null);
+  
+    // Redirect to login page
     navigate("/login");
   };
-
   return (
     <Box>
       {/* Navbar */}
@@ -94,6 +100,7 @@ const Navbar = () => {
             </Flex>
 
             <HStack spacing={4} alignItems="center">
+              <Link to="/chat">
               <Button
                 onClick={onOpenchat}
                 colorScheme="teal"
@@ -102,6 +109,8 @@ const Navbar = () => {
               >
                 <IoMdChatboxes size={20} />
               </Button>
+              </Link>
+  
 
               {user ? (
                 <Menu>
