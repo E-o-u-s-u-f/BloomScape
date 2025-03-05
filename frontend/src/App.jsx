@@ -6,6 +6,11 @@ import { useColorModeValue } from "@chakra-ui/react";
 import Login from "./pages/login.jsx";
 import SignUp from "./pages/SignnUp.jsx";
 import Chat from "./pages/Chatpage.jsx";
+import AboutUs from "./pages/AboutUs.jsx";
+import Resource from "./pages/Resouce.jsx"; // Correct the import name
+
+import Event from "./pages/EventPage.jsx";
+import Profile from "./components/ProfileCard.jsx";
 import Post from "./pages/Post.jsx";
 import ProfileCard from "./components/ProfileCard.jsx";
 import Articles from "./pages/Articles.jsx";
@@ -21,14 +26,18 @@ function App() {
       {!["/login", "/signup"].includes(location.pathname) && <Navbar />}
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<HomePage />} />
         <Route path="/search/:keyword" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/aboutus" element={<AboutUs />} />
+        <Route path="resources" element={<Resource />} /> // Correct the route component
+
+        <Route path="/event" element={<Event />} />       
+       <Route path="/profile" element={<Profile />} />
         <Route path="/create" element={<Post />} />
         <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/ProfileCard" element={<ProfileCard />} />
         <Route path="/articles" element={<Articles />} />
         <Route path="/articles/:id" element={<ArticleDetail />} />
       </Routes>

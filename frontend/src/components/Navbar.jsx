@@ -233,7 +233,6 @@ const Navbar = () => {
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerHeader>Menu</DrawerHeader>
-
           <DrawerBody>
             <Link to="/create">
               <Button
