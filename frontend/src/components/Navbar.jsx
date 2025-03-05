@@ -2,7 +2,6 @@ import {
   Container,
   HStack,
   Flex,
-  Text,
   Button,
   Box,
   useColorMode,
@@ -27,7 +26,8 @@ import { IoMdChatboxes, IoMdMenu } from "react-icons/io";
 import { useEffect, useState } from "react";
 import Chat from "../pages/Chatpage";
 import logo from "../assets/kkk[1].png";
-import SearchBox from "./SearchBox"; // Import the SearchBox component
+import SearchBox from "./SearchBox";
+
 const Navbar = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -65,31 +65,24 @@ const Navbar = () => {
         <Container maxW="1500px" px={4}>
           <Flex h={16} alignItems="center" justifyContent="space-between">
             <HStack spacing={4} alignItems="center">
-              <Button onClick={onOpen}>
-                <IoMdMenu />
+              <Button onClick={onOpen} variant="ghost">
+                <IoMdMenu size={24} />
               </Button>
-              <HStack spacing={2}>
-                <img
+              <Link to="/">
+                <Box
+                  as="img"
                   src={logo}
-                  alt="Logo"
-                  style={{ height: "40px", width: "auto" }}
+                  alt="BloomScape Logo"
+                  height="75px"
+                  width="250px" // Increased width from auto to 150px
+                  objectFit="contain" // Ensures logo scales properly
+                  transition="all 0.2s"
+                  _hover={{ transform: "scale(1.05)" }}
                 />
-                <Text
-                  fontSize={{ base: "22", sm: "28" }}
-                  fontWeight="bold"
-                  textTransform="uppercase"
-                  textAlign="center"
-                  bgGradient="linear(to-r, teal.400, green.500, orange.300)"
-                  bgClip="text"
-                  color="teal.600"
-                >
-                  <Link to="/">BloomScape</Link>
-                </Text>
-              </HStack>
+              </Link>
             </HStack>
 
-            {/* Place SearchBox component here */}
-            <Flex flex="1" justifyContent="center"  mx={4}>
+            <Flex flex="1" justifyContent="center" mx={4}>
               <SearchBox />
             </Flex>
 
@@ -98,7 +91,8 @@ const Navbar = () => {
                 onClick={onOpenchat}
                 colorScheme="teal"
                 variant="outline"
-                width="auto"
+                size="md"
+                _hover={{ transform: "scale(1.05)" }}
               >
                 <IoMdChatboxes size={20} />
               </Button>
@@ -106,7 +100,13 @@ const Navbar = () => {
               {user ? (
                 <Menu>
                   <MenuButton as={Button} rounded="full" variant="link">
-                    <Avatar name={user.name} src={user.profilePicture || ""} />
+                    <Avatar
+                      name={user.name}
+                      src={user.profilePicture || ""}
+                      size="md"
+                      transition="all 0.2s"
+                      _hover={{ transform: "scale(1.05)" }}
+                    />
                   </MenuButton>
                   <MenuList>
                     <MenuItem onClick={() => navigate("/ProfileCard")}>
@@ -118,20 +118,39 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link to="/signup">
-                    <Button colorScheme="teal" variant="outline">
+                    <Button
+                      colorScheme="teal"
+                      variant="outline"
+                      size="md"
+                      _hover={{ transform: "scale(1.05)" }}
+                    >
                       Sign Up
                     </Button>
                   </Link>
                   <Link to="/login">
-                    <Button colorScheme="teal" variant="solid">
+                    <Button
+                      colorScheme="teal"
+                      variant="solid"
+                      size="md"
+                      _hover={{ transform: "scale(1.05)" }}
+                    >
                       Log In
                     </Button>
                   </Link>
                 </>
               )}
 
-              <Button onClick={toggleColorMode}>
-                {colorMode === "light" ? <IoMoon /> : <LuSun size="20" />}
+              <Button
+                onClick={toggleColorMode}
+                variant="ghost"
+                size="md"
+                _hover={{ transform: "scale(1.05)" }}
+              >
+                {colorMode === "light" ? (
+                  <IoMoon size={20} />
+                ) : (
+                  <LuSun size={20} />
+                )}
               </Button>
             </HStack>
           </Flex>
@@ -150,48 +169,56 @@ const Navbar = () => {
         <HStack spacing={6}>
           <Link to="/articles">
             <Button
-              colorScheme="green"
               variant="ghost"
+              color="green.700"
+              bg="transparent"
               fontWeight="bold"
               fontSize="1.2rem"
               borderRadius="md"
               _hover={{ bg: "green.200", transform: "scale(1.05)" }}
+              _active={{ bg: "green.300" }}
             >
               ARTICLES
             </Button>
           </Link>
           <Link to="/aboutus">
             <Button
-              colorScheme="green"
               variant="ghost"
+              color="green.700"
+              bg="transparent"
               fontWeight="bold"
               fontSize="1.2rem"
               borderRadius="md"
               _hover={{ bg: "green.200", transform: "scale(1.05)" }}
+              _active={{ bg: "green.300" }}
             >
               ABOUT US
             </Button>
           </Link>
           <Link to="/event">
             <Button
-              colorScheme="green"
               variant="ghost"
+              color="green.700"
+              bg="transparent"
               fontWeight="bold"
               fontSize="1.2rem"
               borderRadius="md"
               _hover={{ bg: "green.200", transform: "scale(1.05)" }}
+              _active={{ bg: "green.300" }}
             >
               EVENT
             </Button>
           </Link>
           <Link to="/resources">
             <Button
-              colorScheme="green"
               variant="ghost"
+              color="green.700"
+              bg="transparent"
               fontWeight="bold"
               fontSize="1.2rem"
               borderRadius="md"
               _hover={{ bg: "green.200", transform: "scale(1.05)" }}
+              _active={{ bg: "green.300" }}
             >
               RESOURCES
             </Button>
@@ -209,20 +236,37 @@ const Navbar = () => {
 
           <DrawerBody>
             <Link to="/create">
-              <Button w="100%" mb={4}>
+              <Button
+                w="100%"
+                mb={4}
+                colorScheme="teal"
+                variant="outline"
+                _hover={{ transform: "scale(1.05)" }}
+              >
                 Create
               </Button>
             </Link>
             <Link to="/admin">
-              <Button w="100%" mb={4}>
+              <Button
+                w="100%"
+                mb={4}
+                colorScheme="teal"
+                variant="outline"
+                _hover={{ transform: "scale(1.05)" }}
+              >
                 Admin
               </Button>
             </Link>
           </DrawerBody>
 
           <DrawerFooter>
-            <Button w="100%" onClick={toggleColorMode}>
-              {colorMode === "light" ? <IoMoon /> : <LuSun size="20" />}
+            <Button
+              w="100%"
+              onClick={toggleColorMode}
+              variant="ghost"
+              _hover={{ transform: "scale(1.05)" }}
+            >
+              {colorMode === "light" ? <IoMoon /> : <LuSun size={20} />}
             </Button>
           </DrawerFooter>
         </DrawerContent>
