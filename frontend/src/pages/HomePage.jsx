@@ -6,13 +6,12 @@ import "../App.css";
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
-  const { keyword } = useParams(); // Get keyword from the URL
+  const { keyword } = useParams();
 
   const timeAgo = (timestamp) => {
     const now = new Date();
     const postDate = new Date(timestamp);
     const seconds = Math.floor((now - postDate) / 1000);
-
     if (seconds < 60) return `${seconds} seconds ago`;
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} minutes ago`;
@@ -40,6 +39,7 @@ const HomePage = () => {
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
+        console.log("Raw API response:", data); // Add this to debug raw data
         const approvedPosts = data
           .filter((post) => post.adminStatus === true)
           .map((post) => {
@@ -84,6 +84,7 @@ const HomePage = () => {
               <PostCard
                 key={index}
                 profileName={post.profileName}
+                title={post.title} // Add this to pass the title
                 time={post.time} // Readable time format like "2 hours ago" or "Posted on Feb 21"
                 content={post.content}
                 imageUrls={post.image.map((img) => img.url)} // Pass multiple images

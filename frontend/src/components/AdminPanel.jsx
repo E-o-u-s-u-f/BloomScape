@@ -29,7 +29,7 @@ export default function AdminPostApproval() {
         );
         if (!response.ok) throw new Error("Failed to fetch posts");
         const data = await response.json();
-        const unapprovedPosts = data.filter((post) => !post.adminStatus);
+        const unapprovedPosts = data.filter((post) => !post.adminApproved); // Changed adminStatus to adminApproved
         setPosts(unapprovedPosts.reverse());
       } catch (error) {
         console.error("Error fetching posts:", error);
@@ -66,7 +66,7 @@ export default function AdminPostApproval() {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ status, adminApproved: true }),
+            body: JSON.stringify({ status, adminApproved: true }), // Match the Post component's expectation
           }
         );
         if (response.ok) {
@@ -127,20 +127,33 @@ export default function AdminPostApproval() {
             borderRadius="md"
             boxShadow="md"
           >
+            {/* Display Title */}
             <Text
               fontWeight="bold"
-              fontSize="lg"
+              fontSize="xl"
               mb={2}
               color={colorMode === "light" ? "black" : "white"}
             >
-              {post.profileName}
+              {post.title}
             </Text>
+
+            {/* Display Profile Name */}
+            <Text
+              fontWeight="medium"
+              fontSize="md"
+              mb={2}
+              color={colorMode === "light" ? "gray.700" : "gray.300"}
+            >
+              Posted by: {post.profileName}
+            </Text>
+
+            {/* Display Images */}
             <Flex gap={2} wrap="wrap" mb={3}>
               {post.image && post.image.length > 0 ? (
                 post.image.map((img, imgIndex) => (
                   <Image
                     key={imgIndex}
-                    src={img.url}
+                    src={img.url} // Assuming backend returns { url: "image-url" }
                     alt={`Post Image ${imgIndex + 1}`}
                     borderRadius="md"
                     boxSize="150px"
@@ -157,9 +170,15 @@ export default function AdminPostApproval() {
                 />
               )}
             </Flex>
-            <Text mb={3} color={colorMode === "light" ? "black" : "gray.200"}>
-              {post.content}
-            </Text>
+
+            {/* Render HTML Content */}
+            <Box
+              mb={3}
+              color={colorMode === "light" ? "black" : "gray.200"}
+              dangerouslySetInnerHTML={{ __html: post.content }} // Render HTML content
+            />
+
+            {/* Status Badge */}
             <Badge
               px={3}
               py={1}
@@ -175,6 +194,8 @@ export default function AdminPostApproval() {
             >
               {post.status || "Pending"}
             </Badge>
+
+            {/* Approval/Rejection Buttons */}
             <Flex gap={3} mt={3}>
               <Button
                 colorScheme="green"
