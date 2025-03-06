@@ -22,11 +22,13 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "datauri": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "framer-motion": "^12.0.3",
+    "jodit-react": "^5.2.15",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.475.0",
     "mongodb": "^6.12.0",
@@ -35,6 +37,8 @@
     "nodemailer": "^6.10.0",
     "p-limit": "^6.2.0",
     "react-icons": "^5.5.0",
+    "socket.io": "^4.8.1",
+    "react-quill": "^2.0.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {

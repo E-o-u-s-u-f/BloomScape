@@ -8,74 +8,144 @@ import {
   faUserPlus,
   faChevronLeft,
   faChevronRight,
-  faCheck
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import "./PostCard.css";
 
-const PostCard = ({ profileName, time, content, imageUrls }) => {
+const PostCard = ({ profileName, title, time, content, imageUrls }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-  };
+  const handleFollow = () => setIsFollowing(!isFollowing);
+  const handleLike = () => setIsLiked(!isLiked);
+  const handleBookmark = () => setIsBookmarked(!isBookmarked);
 
-  const nextImage = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
-  };
+  const nextImage = () =>
+    setCurrentIndex((prev) => (prev + 1) % imageUrls.length);
+  const prevImage = () =>
+    setCurrentIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
 
-  const prevImage = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? imageUrls.length - 1 : prevIndex - 1
-    );
-  };
+  // Normalize imageUrls to handle both array of strings and array of objects
+  const normalizedImageUrls = imageUrls.map((img) =>
+    typeof img === "string" ? img : img.url
+  );
+
+  // Debugging: Log props to verify title is received
+  console.log({ profileName, title, time, content, imageUrls });
 
   return (
-    <div className="card">
-      <div className="header">
-        <div className="profileIcon">
-          <FontAwesomeIcon icon={faUserCircle} size="2x" />
-        </div>
-        <div className="userDetails">
-          <div className="userNameAndFollow">
-            <h3 className="userName">{profileName}</h3>
-            <button
-              className={`followButton ${isFollowing ? "following" : ""}`}
-              onClick={handleFollow}
-            >
-              <FontAwesomeIcon icon={isFollowing ? faCheck : faUserPlus} />
-              {isFollowing ? "Following" : "Follow"}
-            </button>
+    <article className="post-container">
+      <div className="post-card">
+        <header className="post-header">
+          <div className="profile-wrapper">
+            <FontAwesomeIcon icon={faUserCircle} className="profile-avatar" />
+            <div className="profile-gradient" />
           </div>
-          <p className="time">{time}</p>
-        </div>
-      </div>
-      <div className="content">
-        <p>{content}</p>
-      </div>
-      {imageUrls.length > 0 && (
-        <div className="image-carousel">
-          <button className="carousel-button left" onClick={prevImage}>
-            <FontAwesomeIcon icon={faChevronLeft} />
+          <div className="user-meta">
+            <div className="user-actions">
+              <h3 className="username">{profileName}</h3>
+              <button
+                className={`follow-toggle ${isFollowing ? "followed" : ""}`}
+                onClick={handleFollow}
+              >
+                <FontAwesomeIcon
+                  icon={isFollowing ? faCheck : faUserPlus}
+                  className="toggle-icon"
+                />
+                <span>{isFollowing ? "Following" : "Follow"}</span>
+              </button>
+            </div>
+            <time className="post-time">{time}</time>
+          </div>
+        </header>
+
+        <section className="post-body">
+          {/* Display Title with Fallback */}
+          {title ? (
+            <h2 className="post-title">{title}</h2>
+          ) : (
+            <h2 className="post-title">No Title Provided</h2> // This shows if title is undefined or missing
+          )}
+
+          {/* Render HTML Content */}
+          <div
+            className="post-content"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+
+          {normalizedImageUrls.length > 0 && (
+            <div className="media-container">
+              <div
+                className="media-slider"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+              >
+                {normalizedImageUrls.map((url, idx) => (
+                  <div key={idx} className="media-slide">
+                    <img
+                      src={url}
+                      alt={`Post media ${idx + 1}`}
+                      className="media-image"
+                    />
+                  </div>
+                ))}
+              </div>
+              {normalizedImageUrls.length > 1 && (
+                <>
+                  <button
+                    className="nav-arrow prev"
+                    onClick={prevImage}
+                    disabled={normalizedImageUrls.length === 1}
+                  >
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </button>
+                  <button
+                    className="nav-arrow next"
+                    onClick={nextImage}
+                    disabled={normalizedImageUrls.length === 1}
+                  >
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </button>
+                  <div className="media-indicators">
+                    {normalizedImageUrls.map((_, idx) => (
+                      <span
+                        key={idx}
+                        className={`indicator ${
+                          currentIndex === idx ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentIndex(idx)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+
+        <footer className="post-footer">
+          <button
+            className={`action-btn ${isLiked ? "active" : ""}`}
+            onClick={handleLike}
+          >
+            <FontAwesomeIcon icon={faHeart} className="action-icon" />
+            <span>Like</span>
           </button>
-          <img src={imageUrls[currentIndex]} alt="Post" className="image" />
-          <button className="carousel-button right" onClick={nextImage}>
-            <FontAwesomeIcon icon={faChevronRight} />
+          <button className="action-btn">
+            <FontAwesomeIcon icon={faComment} className="action-icon" />
+            <span>Comment</span>
           </button>
-        </div>
-      )}
-      <div className="footer">
-        <button className="button">
-          <FontAwesomeIcon icon={faHeart} /> Like
-        </button>
-        <button className="button">
-          <FontAwesomeIcon icon={faComment} /> Comment
-        </button>
-        <button className="button">
-          <FontAwesomeIcon icon={faBookmark} /> Bookmark
-        </button>
+          <button
+            className={`action-btn ${isBookmarked ? "active" : ""}`}
+            onClick={handleBookmark}
+          >
+            <FontAwesomeIcon icon={faBookmark} className="action-icon" />
+            <span>Bookmark</span>
+          </button>
+        </footer>
       </div>
-    </div>
+    </article>
   );
 };
 

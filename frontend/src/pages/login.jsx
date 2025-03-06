@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Flex,
   Heading,
@@ -20,19 +20,22 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { useEffect } from "react";
-
+import { toast } from "react-toastify";
+import {useAuth} from "../Context/AuthContext.jsx";
 
 const CFaUserAlt = chakra(FaUserAlt);
 const CFaLock = chakra(FaLock);
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const {setAuthUser}=useAuth();
 
+  // Handling password visibility toggle
   const handleShowClick = () => setShowPassword(!showPassword);
 
-  
+  // Validation Schema using Yup
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email address")
@@ -46,30 +49,69 @@ const Login = () => {
       .required("Password is required"),
   });
 
+  // Effect to redirect if user is already logged in
   useEffect(() => {
     const user = localStorage.getItem("user");
-    if (user) {
-      navigate("/"); 
+    if (!user) {
+      navigate("/login");
     }
   }, [navigate]);
-
+  
+  // Handle form submission
   const handleSubmit = async (values) => {
+    setLoading(true);
+  
     try {
-      const response = await axios.post("http://localhost:5000/api/login", {
+      // Send login request to backend
+      const response = await axios.post("/api/login", {
         email: values.email,
         password: values.password,
       });
-
+  
+      console.log("Response Data: ", response.data); // Log the response data for debugging
+  
       if (response.data.success) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/"); 
+        // The token will be included in the response
+        const token = response.data.token;
+        if (token) {
+          // Save the token in localStorage
+          localStorage.setItem("authToken", token);
+  
+          // Decode the token and save user info to context
+          const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+          setAuthUser(decodedToken); // Set the user in context
+  
+          // Save user details to localStorage (excluding password)
+          const { password, ...userDetails } = decodedToken; // Exclude password
+          localStorage.setItem("user", JSON.stringify(userDetails)); // Save user details
+
+          toast.success("Login successful!");
+
+  
+          // Redirect to the homepage after state is set
+          navigate("/"); // Navigate to home page after login
+        } else {
+          toast.error("Token not received. Login failed.");
+          setLoading(false);
+        }
       } else {
-        alert(response.data.message);
+        setLoading(false);
+        toast.error(response.data.message || "Unknown error occurred.");
       }
     } catch (error) {
-      alert(error.response?.data?.message || "Something went wrong.");
+      setLoading(false);
+  
+      // Log the full error for debugging
+      console.error("Login Error: ", error);
+  
+      // Handle error response from backend
+      const errorMessage = error.response?.data?.message || "Something went wrong.";
+      toast.error(errorMessage); // Show error toast message
     }
   };
+  
+  
+  
 
   return (
     <Flex
@@ -80,12 +122,7 @@ const Login = () => {
       justifyContent="center"
       alignItems="center"
     >
-      <Stack
-        flexDir="column"
-        mb="2"
-        justifyContent="center"
-        alignItems="center"
-      >
+      <Stack flexDir="column" mb="2" justifyContent="center" alignItems="center">
         <Avatar bg="teal.500" />
         <Heading color="teal.400">Welcome</Heading>
         <Box minW={{ base: "90%", md: "468px" }}>
@@ -94,99 +131,111 @@ const Login = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            <Form autoComplete="off">
-              <Stack
-                spacing={4}
-                p="1rem"
-                backgroundColor="white"
-                boxShadow="md"
-                borderRadius="md"
-              >
-                {/* Email Input */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                      <CFaUserAlt color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type="email"
-                      name="email"
-                      placeholder="Email address"
-                      focusBorderColor="teal.500"
-                      paddingLeft="3rem"
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                  </InputGroup>
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                </FormControl>
-
-                {/* Password Input */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement pointerEvents="none">
-                      <CFaLock color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      placeholder="Password"
-                      focusBorderColor="teal.500"
-                      paddingLeft="3rem"
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                    <InputRightElement width="4rem">
-                      <Button
-                        h="1.75rem"
-                        size="sm"
-                        onClick={handleShowClick}
-                        colorScheme="teal"
-                      >
-                        {showPassword ? "Hide" : "Show"}
-                      </Button>
-                    </InputRightElement>
-                  </InputGroup>
-                  <ErrorMessage
-                    name="password"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                  <FormHelperText textAlign="right">
-                    <Link as={RouterLink} to="/forgot-password">
-                      Forgot password?
-                    </Link>
-                  </FormHelperText>
-                </FormControl>
-
-                {/* Login Button */}
-                <Button
+            {({ values, handleChange, handleBlur, touched, errors }) => (
+              <Form>
+                <Stack
+                  spacing={4}
+                  p="1rem"
+                  backgroundColor="white"
+                  boxShadow="md"
                   borderRadius="md"
-                  type="submit"
-                  variant="solid"
-                  colorScheme="teal"
-                  width="full"
                 >
-                  Login
-                </Button>
-              </Stack>
-            </Form>
+                  {/* Email Input */}
+                  <FormControl isInvalid={touched.email && errors.email}>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaUserAlt color="gray.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={values.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Email address"
+                        focusBorderColor="teal.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="teal"
+                        borderWidth="2px"
+                        _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
+                        _hover={{ borderColor: "teal.500" }}
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+                    {touched.email && errors.email && (
+                      <Box color="red" fontSize="sm">
+                        {errors.email}
+                      </Box>
+                    )}
+                  </FormControl>
+
+                  {/* Password Input */}
+                  <FormControl isInvalid={touched.password && errors.password}>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaLock color="gray.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={values.password}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Password"
+                        focusBorderColor="teal.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="teal"
+                        borderWidth="2px"
+                        _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
+                        _hover={{ borderColor: "teal.500" }}
+                        autoComplete="off"
+                      />
+                      <InputRightElement width="4rem">
+                        <Button
+                          h="1.75rem"
+                          size="sm"
+                          onClick={handleShowClick}
+                          colorScheme="teal"
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </Button>
+                      </InputRightElement>
+                    </InputGroup>
+                    {touched.password && errors.password && (
+                      <Box color="red" fontSize="sm">
+                        {errors.password}
+                      </Box>
+                    )}
+                    <FormHelperText textAlign="right">
+                      <Link as={RouterLink} to="/forgot-password">
+                        Forgot password?
+                      </Link>
+                    </FormHelperText>
+                  </FormControl>
+
+                  {/* Login Button */}
+                  <Button
+                    borderRadius="md"
+                    type="submit"
+                    variant="solid"
+                    colorScheme="teal"
+                    width="full"
+                    isLoading={loading}
+                    loadingText="Logging In"
+                  >
+                    Login
+                  </Button>
+                </Stack>
+              </Form>
+            )}
           </Formik>
         </Box>
       </Stack>
