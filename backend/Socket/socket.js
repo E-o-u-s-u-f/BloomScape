@@ -21,7 +21,6 @@ const userSocketmap = {}; // Stores user ID and their associated socket ID
 // When a new socket connects
 io.on("connection", (socket) => {
   const userId = socket.handshake.auth.userId; // Get the userId from the handshake
-
   // Check if userId is passed and is valid
   if (userId && userId !== "undefined") {
     console.log(`User connected: ${userId} with socket ID: ${socket.id}`);

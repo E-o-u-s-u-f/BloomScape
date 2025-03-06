@@ -6,6 +6,7 @@
     import { MultipleCloud } from "./models/multipleCloud.js";
     import uploadMultipleCloud from "./multer/multipleCloud.js";
     const router =express.Router();
+    import isLogin from './middleware/islogin.js';
 
     router.post("/local",uploadFiles,async (req,res) => {
         try {
@@ -111,7 +112,7 @@
     });
     
     
-    router.get("/cloud", async (req, res) => {
+    router.get("/cloud",async (req, res) => {
         try {
             const posts = await MultipleCloud.find();  // Fetch all posts
             res.json(posts);

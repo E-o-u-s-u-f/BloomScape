@@ -81,7 +81,12 @@ const Login = () => {
           const decodedToken = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
           setAuthUser(decodedToken); // Set the user in context
   
+          // Save user details to localStorage (excluding password)
+          const { password, ...userDetails } = decodedToken; // Exclude password
+          localStorage.setItem("user", JSON.stringify(userDetails)); // Save user details
+
           toast.success("Login successful!");
+
   
           // Redirect to the homepage after state is set
           navigate("/"); // Navigate to home page after login

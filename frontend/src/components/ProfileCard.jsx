@@ -1,43 +1,80 @@
-import { useState } from "react";
-import {
-  Box,
-  Center,
-  useColorModeValue,
-  Heading,
-  Text,
-  Stack,
-  Image,
-  Button,
-  Flex,
-  Input,
-  Textarea,
-} from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Center, useColorModeValue, Heading, Text, Stack, Image, Button, Flex, Input, Textarea, Spinner } from "@chakra-ui/react";
 import { FaFacebookF, FaSquareInstagram, FaXTwitter } from "react-icons/fa6";
+import axios from "axios";
 
+// Initial empty profile structure based on the backend data structure
 const initialProfile = {
-  name: "Eousuf Abdullah",
-  image:
-    "https://scontent.fdac99-1.fna.fbcdn.net/v/t39.30808-6/474483707_1191931369118124_5538215198107449011_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=1FP8Lmpr1MUQ7kNvgHihUUG&_nc_oc=AdhxFbX1ouIHepq-shPl-GM41k8L9xd_ND3yGR2GB81E8mK-PxdPlUKh1MpFJHpmsKKkKN13iys5hFEzrycV8xpI&_nc_zt=23&_nc_ht=scontent.fdac99-1.fna&_nc_gid=AGXEqBFSit8peUjVdLhfWFI&oh=00_AYAJNuAIDFP2LJuHYFef2pVZwjn6e6-oTpvcuZT8pm7TBg&oe=67AD38EC",
-  description: "Love Nature Because Nature is Beautiful.",
-  socialLinks: {
-    facebook: "https://www.facebook.com/eousuf.abdullah",
-    instagram: "https://www.instagram.com/eousufabdullah/",
-    twitter: "https://twitter.com/asifuzzaman.shanto",
-  },
+  fullName: "",
+  email: "",
+  profilePicture: "",
+  bio: "",
+  role: "",
+  isVerified: false,
+  createdAt: null,
+  updatedAt: null,
 };
 
 export default function ProfileCard() {
-  const [profile, setProfile] = useState(initialProfile);
+  const [profile, setProfile] = useState(initialProfile);  // Initialize with empty profile
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(initialProfile);
+  const [editedProfile, setEditedProfile] = useState(initialProfile);  // Initially use empty profile
+  const [loading, setLoading] = useState(true); // Loading state
+
+  // Fetch user profile data from the backend
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("jwtToken"); // Assuming you store token in localStorage
+        console.log("Token: ", token); // Log token to ensure it's being fetched
+
+        const response = await axios.get("/api/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Response Data: ", response.data);  // Log the response data
+
+        if (response.data.success) {
+          console.log("Profile Data: ", response.data.user);  // Log the profile data
+          setProfile(response.data.user);  // Set the fetched profile data to state
+          setEditedProfile(response.data.user);  // Set the same data for editing
+        } else {
+          console.log("Profile fetch failed, setting to initial profile.");
+          setProfile(initialProfile);  // If no data, reset to initialProfile
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setProfile(initialProfile);  // If error, reset to initialProfile
+      } finally {
+        setLoading(false);  // Stop loading after fetch attempt
+      }
+    };
+
+    fetchProfile(); // Fetch the profile on component mount
+  }, []); // Empty dependency array to only run on component mount
+
+  // Log the profile data when it's updated
+  console.log("Current Profile: ", profile);
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
-  const handleSave = () => {
-    setProfile(editedProfile);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("jwtToken");
+      const response = await axios.put("/api/profile", editedProfile, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        setProfile(response.data.user);  // Update profile after save
+        setIsEditing(false);
+      } else {
+        console.error("Failed to save profile");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+    }
   };
 
   return (
@@ -64,22 +101,38 @@ export default function ProfileCard() {
             boxShadow={"md"}
             mb={4}
           >
-            <Image
-              height={"full"}
-              width={"full"}
-              objectFit={"cover"}
-              src={profile.image}
-              alt="Profile"
-            />
+            {loading ? (
+              <Spinner size="xl" />
+            ) : profile.profilePicture ? (
+              <Image
+                height={"full"}
+                width={"full"}
+                objectFit={"cover"}
+                src={profile.profilePicture}
+                alt="Profile"
+              />
+            ) : (
+              <Box
+                height={"full"}
+                width={"full"}
+                bg={"gray.200"}
+                borderRadius="full"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Text>No Image</Text>
+              </Box>
+            )}
           </Box>
 
           {/* Profile Details */}
           <Stack align={"center"} spacing={2}>
             {isEditing ? (
               <Input
-                value={editedProfile.name}
+                value={editedProfile.fullName}
                 onChange={(e) =>
-                  setEditedProfile({ ...editedProfile, name: e.target.value })
+                  setEditedProfile({ ...editedProfile, fullName: e.target.value })
                 }
                 fontSize={"2xl"}
                 fontWeight={600}
@@ -87,16 +140,16 @@ export default function ProfileCard() {
               />
             ) : (
               <Heading fontSize={"2xl"} fontWeight={600}>
-                {profile.name}
+                {profile.fullName || "No Name Provided"}
               </Heading>
             )}
             {isEditing ? (
               <Textarea
-                value={editedProfile.description}
+                value={editedProfile.bio}
                 onChange={(e) =>
                   setEditedProfile({
                     ...editedProfile,
-                    description: e.target.value,
+                    bio: e.target.value,
                   })
                 }
                 fontSize={"md"}
@@ -104,44 +157,56 @@ export default function ProfileCard() {
               />
             ) : (
               <Text color={"gray.500"} fontSize={"md"} textAlign={"center"}>
-                {profile.description}
+                {profile.bio || "No Bio Provided"}
               </Text>
             )}
           </Stack>
 
           {/* Social Media Links */}
-          <Flex mt={4} gap={4}>
-            <Button
-              as="a"
-              href={profile.socialLinks.instagram}
-              target="_blank"
-              colorScheme="pink"
-              size="sm"
-              rounded="full"
-            >
-              <FaSquareInstagram />
-            </Button>
-            <Button
-              as="a"
-              href={profile.socialLinks.facebook}
-              target="_blank"
-              colorScheme="blue"
-              size="sm"
-              rounded="full"
-            >
-              <FaFacebookF />
-            </Button>
-            <Button
-              as="a"
-              href={profile.socialLinks.twitter}
-              target="_blank"
-              colorScheme="gray"
-              size="sm"
-              rounded="full"
-            >
-              <FaXTwitter />
-            </Button>
-          </Flex>
+          {profile.socialLinks ? (
+            <Flex mt={4} gap={4}>
+              {profile.socialLinks.instagram && (
+                <Button
+                  as="a"
+                  href={profile.socialLinks.instagram}
+                  target="_blank"
+                  colorScheme="pink"
+                  size="sm"
+                  rounded="full"
+                >
+                  <FaSquareInstagram />
+                </Button>
+              )}
+              {profile.socialLinks.facebook && (
+                <Button
+                  as="a"
+                  href={profile.socialLinks.facebook}
+                  target="_blank"
+                  colorScheme="blue"
+                  size="sm"
+                  rounded="full"
+                >
+                  <FaFacebookF />
+                </Button>
+              )}
+              {profile.socialLinks.twitter && (
+                <Button
+                  as="a"
+                  href={profile.socialLinks.twitter}
+                  target="_blank"
+                  colorScheme="gray"
+                  size="sm"
+                  rounded="full"
+                >
+                  <FaXTwitter />
+                </Button>
+              )}
+            </Flex>
+          ) : (
+            <Text color={"gray.500"} fontSize={"sm"} textAlign={"center"}>
+              No social links available
+            </Text>
+          )}
 
           {/* Edit Profile Button */}
           {isEditing ? (

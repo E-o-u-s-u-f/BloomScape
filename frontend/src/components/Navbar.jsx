@@ -50,15 +50,11 @@ const Navbar = () => {
     }
   }, []);
   const handleLogout = () => {
-    // Clear the JWT token from localStorage
-    localStorage.removeItem("authToken");
-  
-    // Optionally, clear user state if you're using context
-    setAuthUser(null);
-  
-    // Redirect to login page
-    navigate("/login");
+    logout(navigate); // Use the logout function from context
+
   };
+
+
   return (
     <Box>
       {/* Navbar */}
@@ -118,7 +114,7 @@ const Navbar = () => {
                     <Avatar name={user.name} src={user.profilePicture || ""} />
                   </MenuButton>
                   <MenuList>
-                    <MenuItem onClick={() => navigate("/ProfileCard")}>
+                    <MenuItem onClick={() => navigate("/profile")}>
                       Profile
                     </MenuItem>
                     <MenuItem onClick={handleLogout}>Logout</MenuItem>

@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Flex, Text, Avatar, IconButton, Spinner, Input, Button } from '@chakra-ui/react';
-import { IoArrowBackSharp } from 'react-icons/io5';
-import { IoSend } from 'react-icons/io5';
+import userConversation from '../Zustand/userConversation.js';
+import { useAuth } from '../Context/AuthContext.jsx';
 import { TiMessages } from 'react-icons/ti';
+import { IoArrowBackSharp, IoSend } from 'react-icons/io5';
 import axios from 'axios';
 import { useSocketContext } from '../Context/SocketContext.jsx';
 import notify from '../assets/notification.mp3';
-import userConversation from '../Zustand/userConversation.js';
-import { useAuth } from '../Context/AuthContext.jsx';
+import { Box, Flex, Text, Button, Input, Avatar, Spinner } from '@chakra-ui/react';
 
 const MessageContainer = ({ onBackUser }) => {
-  const { messages, selectedConversation, setMessage, setSelectedConversation } = userConversation();
+  const { messages = [], selectedConversation, setMessage, setSelectedConversation } = userConversation();
   const { socket } = useSocketContext();
   const { authUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -18,170 +17,179 @@ const MessageContainer = ({ onBackUser }) => {
   const [sendData, setSendData] = useState('');
   const lastMessageRef = useRef();
 
-  // Handle new incoming messages
   useEffect(() => {
-    socket?.on('newMessage', (newMessage) => {
+    const handleNewMessage = (newMessage) => {
+      console.log('New message received:', newMessage); // Debugging log
       const sound = new Audio(notify);
       sound.play();
-      // Append new message to the message state
       setMessage((prevMessages) => [...prevMessages, newMessage]);
-    });
-
-    return () => socket?.off('newMessage');
+    };
+  
+    socket?.on('newMessage', handleNewMessage);
+  
+    return () => {
+      socket?.off('newMessage', handleNewMessage);
+    };
   }, [socket, setMessage]);
 
-  // Scroll to the last message
   useEffect(() => {
-    setTimeout(() => {
-      lastMessageRef?.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  }, [messages]);
-
-  // Fetch messages on selected conversation change
-  useEffect(() => {
-    const getMessages = async () => {
-      if (selectedConversation?._id) {
+    if (selectedConversation?._id) {
+      const getMessages = async () => {
         setLoading(true);
         try {
-          const response = await axios.get(`/api/message/${selectedConversation._id}`);
-          const data = await response.data;
+          const get = await axios.get(`/api/massage/${selectedConversation?._id}`);
+          const data = await get.data;
+          setLoading(false);
           if (data.success === false) {
             console.log(data.message);
-          } else {
-            setMessage(data.messages);
           }
+          setMessage(Array.isArray(data) ? data : []);
         } catch (error) {
-          console.error(error);
-        } finally {
           setLoading(false);
+          console.log(error);
         }
-      }
-    };
+      };
+      getMessages();
+    }
+  }, [selectedConversation?._id, setMessage]);
 
-    getMessages();
-  }, [selectedConversation, setMessage]);
+  useEffect(() => {
+    lastMessageRef?.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-  // Handle message input change
-  const handleMessageChange = (e) => {
+  const handleMessages = (e) => {
     setSendData(e.target.value);
   };
 
-  // Handle message send
   const handleSubmit = async (e) => {
-    e.preventDefault();
+   // e.preventDefault();
+    
     setSending(true);
-    try {
-      const response = await axios.post(`/api/message/send/${selectedConversation._id}`, { message: sendData });
+    try {console.log('Form submitted');
+      const sound = new Audio(notify);
+      sound.play();
+      const response = await axios.post(`/api/massage/send/${selectedConversation._id}`, {
+        massage: sendData,
+      });
+      console.log(response);
       const data = await response.data;
+      console.log(data);
       if (data.success === false) {
-        console.log(data.message);
+        console.log(data.massage);
       } else {
-        // Once the message is successfully sent, clear the input and append the message
-        setMessage((prevMessages) => [...prevMessages, data.message]);
+        console.log('sent massage');
+
+        setMessage((prevMessages) => [...prevMessages, data.massage]);
         setSendData('');
+
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <Box minW="500px" h="99%" display="flex" flexDir="column" py={2}>
+    <div style={{ minWidth: '500px', height: '99%', display: 'flex', flexDirection: 'column', padding: '16px' }}>
       {selectedConversation === null ? (
-        <Flex justify="center" align="center" w="full" h="full">
-          <Box textAlign="center" px={4} fontSize="2xl" color="gray.950" fontWeight="semibold">
-            <Text fontSize="2xl">Welcome!!👋 {authUser.username}😉</Text>
-            <Text fontSize="lg">Select a chat to start messaging</Text>
-            <TiMessages fontSize="6xl" />
-          </Box>
-        </Flex>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '0 16px', textAlign: 'center' }}>
+            <p style={{ fontSize: '2rem', color: '#333', fontWeight: '600' }}>Welcome!!👋 {authUser.username}😉</p>
+            <p style={{ fontSize: '1rem' }}>Select a chat to start messaging</p>
+            <TiMessages style={{ fontSize: '6rem' }} />
+          </div>
+        </div>
       ) : (
         <>
-          <Flex justify="space-between" align="center" bg="sky.600" borderRadius="lg" h="12" p={2}>
-            <Flex gap={2} w="full" justify="space-between">
-              <Box display={{ base: 'block', md: 'none' }} ml={1}>
-                <IconButton
-                  icon={<IoArrowBackSharp size={25} />}
-                  aria-label="Back"
-                  bg="white"
-                  borderRadius="full"
-                  onClick={() => onBackUser(true)}
-                />
-              </Box>
-              <Flex align="center" gap={2}>
-                <Avatar src={selectedConversation?.profilepic} size="sm" />
-                <Text fontSize={{ base: 'sm', md: 'xl' }} fontWeight="bold" color="gray.950">
-                  {selectedConversation?.username}
-                </Text>
-              </Flex>
-            </Flex>
-          </Flex>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px', backgroundColor: '#38bdf8', padding: '0 8px', borderRadius: '8px', height: '48px' }}>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+              <div style={{ display: 'none', marginLeft: '4px' }}>
+                <button onClick={() => onBackUser(true)} style={{ backgroundColor: 'white', borderRadius: '50%', padding: '8px' }}>
+                  <IoArrowBackSharp size={25} />
+                </button>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginRight: '8px', gap: '8px' }}>
+                <img src={selectedConversation?.profilepic} alt="user" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                <p style={{ color: '#333', fontSize: '1rem', fontWeight: 'bold' }}>{selectedConversation?.username}</p>
+              </div>
+            </div>
+          </div>
 
-          <Box flex="1" overflow="auto" p={2}>
+          <div style={{ flex: '1', overflowY: 'auto', marginTop: '16px' }}>
             {loading ? (
-              <Flex w="full" h="full" justify="center" align="center" gap={4}>
-                <Spinner />
-              </Flex>
-            ) : messages.length === 0 ? (
-              <Text textAlign="center" color="white">
-                Send a message to start Conversation
-              </Text>
+              <Spinner size="xl" />
+            ) : messages?.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'white' }}>Send a message to start Conversation</p>
             ) : (
               messages.map((message) => (
-                <Box key={message._id} ref={lastMessageRef} mb={2}>
-                  <Flex justify={message.senderId === authUser._id ? 'flex-end' : 'flex-start'} align="center">
-                    <Box>
-                      <Box
-                        bg={message.senderId === authUser._id ? 'sky.600' : 'gray.300'}
-                        color="white"
-                        borderRadius="md"
-                        p={2}
+                <div key={message?._id} ref={lastMessageRef}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div
+                      className={`chat ${message.senderId === authUser._id ? 'chat-end' : 'chat-start'}`}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginBottom: '8px',
+                      }}
+                    >
+                      <div className="chat-image avatar"></div>
+                      <div
+                        style={{
+                          backgroundColor: message.senderId === authUser._id ? 'skyblue' : 'transparent',
+                          padding: '8px',
+                          borderRadius: '8px',
+                          color: 'blue',
+                          maxWidth: '80%',
+                        }}
                       >
-                        {message.message}
-                      </Box>
-                      <Text fontSize="xs" color="gray.500" textAlign="right">
-                        {new Date(message.createdAt).toLocaleDateString('en-IN')}
-                        {` ${new Date(message.createdAt).toLocaleTimeString('en-IN', {
-                          hour: 'numeric',
-                          minute: 'numeric',
-                        })}`}
-                      </Text>
-                    </Box>
-                  </Flex>
-                </Box>
+                        {message?.massage}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '10px', opacity: '0.8' }}>
+                      {new Date(message?.createdAt).toLocaleDateString('en-IN')}
+                      {new Date(message?.createdAt).toLocaleTimeString('en-IN', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      })}
+                    </div>
+                  </div>
+                </div>
               ))
             )}
-          </Box>
+          </div>
 
           <form onSubmit={handleSubmit}>
-            <Flex align="center" bg="white" borderRadius="full" p={2}>
-              <Input
+            <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '8px', borderRadius: '50px', marginTop: '16px' }}>
+              <input
                 value={sendData}
-                onChange={handleMessageChange}
+                onChange={handleMessages}
+                required
+                placeholder="Type a message"
                 id="message"
                 type="text"
-                required
-                borderRadius="full"
-                bg="transparent"
-                border="none"
-                px={4}
+                style={{
+                  width: '100%',
+                  backgroundColor: 'transparent',
+                  padding: '8px',
+                  border: 'none',
+                  outline: 'none',
+                  borderRadius: '50px',
+                }}
               />
-              <Button
-                type="submit"
-                variant="link"
-                aria-label="Send Message"
-                isLoading={sending}
-                loadingText="Sending"
-              >
-                <IoSend size={25} color="sky.700" />
-              </Button>
-            </Flex>
+              <button type="submit" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                {sending ? (
+                  <div style={{ border: '4px solid #f3f3f3', borderTop: '4px solid #3498db', borderRadius: '50%', width: '20px', height: '20px', animation: 'spin 2s linear infinite' }}></div>
+                ) : (
+                  <IoSend size={25} style={{ color: '#38bdf8' }} />
+                )}
+              </button>
+            </div>
           </form>
         </>
       )}
-    </Box>
+    </div>
   );
 };
 

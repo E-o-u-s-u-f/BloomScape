@@ -4,48 +4,40 @@ import { getReciverSocketId,io } from "../Socket/socket.js";
 
 export const sendMassage = async (req, res) => {
   try {
-    const { massage } = req.body; // Get the message content
+    const { massage } = req.body;  // Ensure this is 'massage' (as per your schema)
     const { id: receiverId } = req.params; // The receiver's ID from the route params
     const senderId = req.user._id; // Get the sender's ID from the authenticated user
 
-    console.log(`Sender ID: ${senderId}, Receiver ID: ${receiverId}, Message: ${massage}`);
+    console.log(`Sender ID: ${senderId}, Receiver ID: ${receiverId}, Massage: ${massage}`);
 
-    // Find the existing conversation between sender and receiver
     let chats = await Conversation.findOne({
       participent: { $all: [senderId, receiverId] }
     });
 
-    // If no conversation exists, create a new one
     if (!chats) {
       chats = await Conversation.create({
         participent: [senderId, receiverId]
       });
     }
 
-    // Create a new message
     const newMassage = new Massage({
       senderId,
       receiverId,
-      massage,
-      conversationId: chats._id // Associate the message with the conversation
+      massage,  // Use 'massage' here as per your schema
+      conversationId: chats._id
     });
 
-    // Save the new message
     await newMassage.save();
 
-    // Push the new message ID into the massages array of the conversation
     chats.massages.push(newMassage._id);
-
-    // Save the updated conversation document
     await chats.save();
-    const receiverSocketId = getReciverSocketId(receiverId);
-    if(receiverSocketId)
-    {
+
+    const receiverSocketId = getReciverSocketId(receiverId);  // Correct function name
+    if (receiverSocketId) {
       io.to(receiverSocketId).emit('newMassage', newMassage);
     }
 
-    // Return the newly created message
-    res.status(201).send(newMassage);
+    res.status(201).send(newMassage);  // Return the newly created message
   } catch (error) {
     console.log('Error in sendMassage controller:', error.message);
     res.status(500).send({ success: false, message: error.message });
@@ -56,8 +48,10 @@ export const getMassage = async (req, res) => {
   try {
     const { id: receiverId } = req.params; // Receiver's ID from the route params
     const senderId = req.user._id; // Sender's ID from the authenticated user
-
+    console.log('Sender ID:', senderId); // Debugging log
     // Find the conversation between the sender and receiver
+
+    
     const chats = await Conversation.findOne({
       participent: { $all: [senderId, receiverId] }
     }).populate("massages"); // Populate the massages field with the message data

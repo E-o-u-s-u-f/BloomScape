@@ -9,7 +9,7 @@ const islogin = async (req, res, next) => {
 
     // If there's no token, return an unauthorized response
     if (!token) {
-      return res.status(401).send({ success: false, message: 'User Unauthorized: No token provided' });
+      return res.status(401).send({ success: false, message: 'Empty token' });
     }
 
     // Decode the token
@@ -21,7 +21,7 @@ const islogin = async (req, res, next) => {
 
     // Find the user by decoded ID
     const user = await User.findById(decoded.userId).select("-password"); // Await the result
-
+    console.log('User:------>>>>', user); // Debugging log
     if (!user) {
       return res.status(404).send({ success: false, message: 'User not found' });
     }

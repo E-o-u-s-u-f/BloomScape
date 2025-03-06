@@ -10,6 +10,8 @@ import massageroute from "./route&controller/messageRoute.js";
 import cookieParser from "cookie-parser";
 import userRoute from "./route&controller/userRoute.js";
 import { app, server } from './Socket/socket.js';
+import islogin from "./middleware/islogin.js";
+import profile from "./Profile/profileroute.js"
 
 dotenv.config();
 
@@ -38,7 +40,7 @@ cloudinary.config({
 app.use("/api/multiple", multipleuploads);
 app.use("/api/massage", massageroute);
 app.use("/api/user", userRoute);
-
+app.use("/api", profile);
 app.post("/api/users", async (req, res) => {
   const user = req.body;
 
@@ -64,7 +66,6 @@ app.post("/api/login", async (req, res) => {
   try {
     // Check if the user exists
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({ success: false, message: "User not found" });
     }
@@ -80,6 +81,24 @@ app.post("/api/login", async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
+});
+
+
+
+app.post("/api/logout", async (req, res) => {
+  try {
+    res.cookie("jwt",'',{
+        maxAge:0
+    })
+    res.status(200).send({success:true ,message:"User LogOut"})
+
+} catch (error) {
+    res.status(500).send({
+        success: false,
+        message: error
+    })
+    console.log(error);
+}
 });
 
 // Listen for connections (for both HTTP and WebSocket)
