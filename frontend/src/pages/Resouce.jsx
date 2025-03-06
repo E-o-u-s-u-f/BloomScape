@@ -1,5 +1,4 @@
-import React from 'react';
-import { Box, Heading, Text, Button, SimpleGrid, GridItem, Image } from '@chakra-ui/react';
+import { Box, Heading, Text, Button, SimpleGrid, GridItem } from '@chakra-ui/react';
 
 const ResourceHub = () => {
   return (

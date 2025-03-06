@@ -7,12 +7,12 @@ import Login from "./pages/login.jsx";
 import SignUp from "./pages/SignnUp.jsx";
 import Chat from "./pages/Chatpage.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
-import Resource from "./pages/Resouce.jsx"; // Correct the import name
+import Resource from "./pages/Resouce.jsx"; 
 
 import Event from "./pages/EventPage.jsx";
 import Profile from "./components/ProfileCard.jsx";
 import Post from "./pages/Post.jsx";
-import ProfileCard from "./components/ProfileCard.jsx";
+
 import Articles from "./pages/Articles.jsx";
 import ArticleDetail from "./components/ArticleDetail.jsx";
 import AdminPanel from "./components/AdminPanel.jsx";
@@ -21,13 +21,13 @@ import OTPVerification from "./pages/otp.jsx";
 function App() {
   const location = useLocation();
   
-  // Add "/otp-verification" to the routes where Navbar should not appear
+  
   const routesWithoutNavbar = ["/login", "/signup", "/otp-verification"];
   const showNavbar = !routesWithoutNavbar.includes(location.pathname);
 
   return (
     <Box minH={"100vh"} bg={useColorModeValue("gray.100", "gray.900")}>
-      {/* Only show Navbar when showNavbar is true */}
+      
       {showNavbar && <Navbar />}
 
       <Routes>
@@ -37,7 +37,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/aboutus" element={<AboutUs />} />
-        <Route path="resources" element={<Resource />} /> // Correct the route component
+        <Route path="resources" element={<Resource />} />
 
         <Route path="/event" element={<Event />} />       
        <Route path="/profile" element={<Profile />} />

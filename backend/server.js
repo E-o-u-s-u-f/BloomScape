@@ -24,8 +24,8 @@ cloudinary.config({
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.SENDER, // Your email
-      pass: process.env.PASSWORD, // App password (not actual email password)
+      user: process.env.SENDER, 
+      pass: process.env.PASSWORD, 
     },
   });
   
@@ -37,22 +37,22 @@ app.post("/api/users", async (req, res) => {
     const { fullName, email, password } = req.body;
   
     try {
-      // Check if user already exists
+     
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: "User already exists" });
       }
   
-      // Generate OTP
+      
       const otp = generateOTP();
   
-      // Create temporary user with OTP
+    
       const user = new User({
         fullName,
         email,
-        password, // Storing plain text password
+        password, 
         otp,
-        otpExpires: Date.now() + 10 * 60 * 1000, // 10 minutes expiry
+        otpExpires: Date.now() + 10 * 60 * 1000,
       });
       await user.save();
   

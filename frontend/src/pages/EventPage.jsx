@@ -1,5 +1,4 @@
 import Countdown from 'react-countdown';
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Box, Heading, Text, Button, SimpleGrid, GridItem, Image,useToast } from '@chakra-ui/react';
 const EventPage = () => {
