@@ -1,246 +1,242 @@
-import React, { useEffect, useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { useAuth } from '../Context/AuthContext.jsx';
-import { useNavigate } from 'react-router-dom';
-import { IoArrowBackSharp } from 'react-icons/io5';
-import { BiLogOut } from 'react-icons/bi';
-import userConversation from '../Zustand/userConversation.js';
-import { useSocketContext } from '../Context/SocketContext.jsx';
+import React, { useEffect, useState } from "react";
+import { FaSearch } from "react-icons/fa";
+import { IoArrowBackSharp } from "react-icons/io5";
+import { BiLogOut } from "react-icons/bi";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useAuth } from "../Context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
+import userConversation from "../Zustand/userConversation.js";
+import { useSocketContext } from "../Context/SocketContext.jsx";
+import {
+  Box,
+  Flex,
+  Input,
+  IconButton,
+  Avatar,
+  Text,
+  VStack,
+  HStack,
+  Divider,
+  Spinner,
+  Badge,
+} from "@chakra-ui/react";
+
 const Sidebar = ({ onSelectUser }) => {
   const navigate = useNavigate();
   const { authUser, setAuthUser } = useAuth();
-  const [searchInput, setSearchInput] = useState('');
-  const [searchUser, setSearchuser] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchUser, setSearchUser] = useState([]);
   const [chatUser, setChatUser] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedUserId, setSetSelectedUserId] = useState(null);
-  const [newMessageUsers, setNewMessageUsers] = useState('');
-  const { messages, setMessage, selectedConversation, setSelectedConversation } = userConversation();
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [newMessageUsers, setNewMessageUsers] = useState({});
+  const { setSelectedConversation } = userConversation();
   const { onlineUser, socket } = useSocketContext();
 
-  const nowOnline = chatUser.map((user) => user._id);
-  const isOnline = nowOnline.map((userId) => onlineUser.includes(userId));
-
+  // Handle new messages via socket
   useEffect(() => {
-    socket?.on('newMessage', (newMessage) => {
-      setNewMessageUsers(newMessage);
+    socket?.on("newMessage", (newMessage) => {
+      setNewMessageUsers((prev) => ({
+        ...prev,
+        [newMessage.senderId]: (prev[newMessage.senderId] || 0) + 1,
+      }));
     });
-    return () => socket?.off('newMessage');
-  }, [socket, messages]);
+    return () => socket?.off("newMessage");
+  }, [socket]);
 
+  // Fetch current chatters
   useEffect(() => {
     const chatUserHandler = async () => {
       setLoading(true);
       try {
-        const chatters = await axios.get('/api/user/currentchatters');
-        const data = chatters.data;
-        if (data.success === false) {
-          setLoading(false);
-          console.log(data.message);
-        }
-        setLoading(false);
-        setChatUser(data);
+        const chatters = await axios.get("/api/user/currentchatters");
+        setChatUser(chatters.data);
       } catch (error) {
+        console.error("Error fetching chatters:", error);
+        toast.error("Failed to load conversations");
+      } finally {
         setLoading(false);
-        console.log(error);
       }
     };
     chatUserHandler();
   }, []);
 
-  const handelSearchSubmit = async (e) => {
+  // Handle search submission
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
+    if (!searchInput.trim()) return;
     setLoading(true);
     try {
       const search = await axios.get(`/api/user/search?search=${searchInput}`);
       const data = search.data;
-      if (data.success === false) {
-        setLoading(false);
-        console.log(data.message);
-      }
-      setLoading(false);
       if (data.length === 0) {
-        toast.info('User Not Found');
-      } else {
-        setSearchuser(data);
+        toast.info("User Not Found");
       }
+      setSearchUser(data);
     } catch (error) {
+      console.error("Error searching users:", error);
+      toast.error("Search failed");
+    } finally {
       setLoading(false);
-      console.log(error);
     }
   };
 
-  const handelUserClick = (user) => {
+  // Handle user selection
+  const handleUserClick = (user) => {
     onSelectUser(user);
     setSelectedConversation(user);
-    setSetSelectedUserId(user._id);
-    setNewMessageUsers('');
+    setSelectedUserId(user._id);
+    setNewMessageUsers((prev) => ({ ...prev, [user._id]: 0 }));
   };
 
-  const handSearchback = () => {
-    setSearchuser([]);
-    setSearchInput('');
+  // Reset search
+  const handleSearchBack = () => {
+    setSearchUser([]);
+    setSearchInput("");
   };
 
-const handelLogOut = async () => {
+  // Handle logout
+  const handleLogOut = async () => {
     if (!authUser) {
-        toast.error("User is not logged in.");
-        return;
+      toast.error("User is not logged in.");
+      return;
     }
 
-
-    const confirmlogout = window.prompt("type 'UserName' To LOGOUT");
-    console.log("AuthUser:", authUser);
-
-    if (confirmlogout === authUser.fullName ) {
-        setLoading(true)
-        try {
-            const logout = await axios.post('/api/logout')
-            const data = logout.data;
-            if (data?.success === false) {
-                setLoading(false)
-                console.log(data?.message);
-            }
-            toast.info(data?.message)
-            //localStorage.removeItem('authToken')
-            localStorage.removeItem('user')
-            setAuthUser(null)
-            setLoading(false)
-            navigate('.api/login')
-        } catch (error) {
-            setLoading(false)
-            console.log(error);
-        }
+    const confirmLogout = window.prompt("Type your username to LOGOUT");
+    if (confirmLogout === authUser.fullName) {
+      setLoading(true);
+      try {
+        await axios.post("/api/logout");
+        toast.info("Logged out successfully");
+        localStorage.removeItem("user");
+        setAuthUser(null);
+        navigate("/api/login");
+      } catch (error) {
+        console.error("Logout error:", error);
+        toast.error("Logout failed");
+      } finally {
+        setLoading(false);
+      }
     } else {
-        toast.info("LogOut Cancelled")
+      toast.info("Logout Cancelled");
     }
-
-}
-
+  };
 
   return (
-    <div style={{ height: '100%', padding: '0 1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-        <form onSubmit={handelSearchSubmit} style={{ display: 'flex', justifyContent: 'space-between', width: 'auto', backgroundColor: 'white', borderRadius: '50px' }}>
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            type='text'
-            style={{ padding: '0.5rem', width: 'auto', backgroundColor: 'transparent', border: 'none', outline: 'none', borderRadius: '50px' }}
-            placeholder='search user'
-          />
-          <button type='submit' style={{ background: '#38bdf8', borderRadius: '50%', padding: '0.5rem' }}>
-            <FaSearch style={{ color: 'white' }} />
-          </button>
+    <VStack
+      spacing={4}
+      h="full"
+      p={4}
+      bg="white"
+      borderRadius="xl"
+      boxShadow="md"
+    >
+      {/* Search and Profile */}
+      <HStack w="full">
+        <form onSubmit={handleSearchSubmit} style={{ flex: 1 }}>
+          <HStack>
+            <Input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search user"
+              variant="outline"
+              borderRadius="full"
+              bg="gray.100"
+            />
+            <IconButton
+              type="submit"
+              icon={<FaSearch />}
+              colorScheme="blue"
+              borderRadius="full"
+              aria-label="Search"
+              isLoading={loading}
+            />
+          </HStack>
         </form>
-        <img
-          onClick={() => navigate(`/profile/${authUser?._id}`)}
+        <Avatar
           src={authUser?.profilepic}
-          style={{ height: '48px', width: '48px', borderRadius: '50%', cursor: 'pointer', transition: 'transform 0.3s' }}
-          onMouseOver={(e) => (e.target.style.transform = 'scale(1.1)')}
-          onMouseOut={(e) => (e.target.style.transform = 'scale(1)')}
+          size="md"
+          cursor="pointer"
+          onClick={() => navigate(`/profile/${authUser?._id}`)}
         />
-      </div>
-      <hr style={{ margin: '1rem 0' }} />
-      {searchUser?.length > 0 ? (
-        <>
-          <div style={{ minHeight: '70%', maxHeight: '80%', overflowY: 'auto' }}>
-            <div style={{ width: 'auto' }}>
-              {searchUser.map((user, index) => (
-                <div key={user._id}>
-                  <div
-                    onClick={() => handelUserClick(user)}
-                    style={{
-                      display: 'flex',
-                      gap: '1rem',
-                      alignItems: 'center',
-                      padding: '0.5rem',
-                      cursor: 'pointer',
-                      backgroundColor: selectedUserId === user?._id ? '#38bdf8' : 'transparent',
-                      borderRadius: '8px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%' }}>
-                        <img src={user.profilepic} alt='user.img' style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', flex: '1' }}>
-                      <p style={{ fontWeight: 'bold', color: '#333' }}>{user.username}</p>
-                    </div>
-                  </div>
-                  <hr style={{ margin: '0.5rem 0', border: '1px solid #ddd' }} />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: 'auto' }}>
-            <button onClick={handSearchback} style={{ background: 'white', borderRadius: '50%', padding: '0.5rem' }}>
-              <IoArrowBackSharp size={25} />
-            </button>
-          </div>
-        </>
+      </HStack>
+
+      <Divider />
+
+      {/* User List or Search Results */}
+      {searchUser.length > 0 ? (
+        <VStack w="full" spacing={2} overflowY="auto" flex={1}>
+          {searchUser.map((user) => (
+            <HStack
+              key={user._id}
+              w="full"
+              p={2}
+              borderRadius="md"
+              bg={selectedUserId === user._id ? "blue.100" : "transparent"}
+              cursor="pointer"
+              onClick={() => handleUserClick(user)}
+            >
+              <Avatar src={user.profilepic} size="sm" />
+              <Text fontWeight="bold">{user.username}</Text>
+            </HStack>
+          ))}
+          <IconButton
+            icon={<IoArrowBackSharp />}
+            onClick={handleSearchBack}
+            colorScheme="gray"
+            variant="outline"
+            aria-label="Back to conversations"
+          />
+        </VStack>
       ) : (
-        <>
-          <div style={{ minHeight: '70%', maxHeight: '80%', overflowY: 'auto' }}>
-            <div style={{ width: 'auto' }}>
-              {chatUser.length === 0 ? (
-                <div style={{ fontWeight: 'bold', textAlign: 'center', fontSize: '1.5rem', color: '#f39c12' }}>
-                  <h1>Why are you Alone!!🤔</h1>
-                  <h1>Search username to chat</h1>
-                </div>
-              ) : (
-                chatUser.map((user, index) => (
-                  <div key={user._id}>
-                    <div
-                      onClick={() => handelUserClick(user)}
-                      style={{
-                        display: 'flex',
-                        gap: '1rem',
-                        alignItems: 'center',
-                        padding: '0.5rem',
-                        cursor: 'pointer',
-                        backgroundColor: selectedUserId === user?._id ? '#38bdf8' : 'transparent',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%' }}>
-                        <img src={user.profilepic} alt='user.img' style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', flex: '1' }}>
-                        <p style={{ fontWeight: 'bold', color: '#333' }}>{user.username}</p>
-                      </div>
-                      {newMessageUsers.receiverId === authUser._id && newMessageUsers.senderId === user._id && (
-                        <div
-                          style={{
-                            backgroundColor: '#4caf50',
-                            color: 'white',
-                            padding: '2px 8px',
-                            borderRadius: '50%',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          +1
-                        </div>
-                      )}
-                    </div>
-                    <hr style={{ margin: '0.5rem 0', border: '1px solid #ddd' }} />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: 'auto' }}>
-            <button onClick={handelLogOut} style={{ background: '#f44336', borderRadius: '8px', padding: '0.5rem' }}>
-              <BiLogOut size={25} style={{ color: 'white' }} />
-            </button>
-            <p style={{ fontSize: '0.875rem', padding: '0.5rem' }}>Logout</p>
-          </div>
-        </>
+        <VStack w="full" spacing={2} overflowY="auto" flex={1}>
+          {loading ? (
+            <Spinner size="lg" />
+          ) : chatUser.length === 0 ? (
+            <Text fontWeight="bold" textAlign="center" color="orange.500">
+              No conversations yet. Search for users to start chatting!
+            </Text>
+          ) : (
+            chatUser.map((user) => (
+              <HStack
+                key={user._id}
+                w="full"
+                p={2}
+                borderRadius="md"
+                bg={selectedUserId === user._id ? "blue.100" : "transparent"}
+                cursor="pointer"
+                onClick={() => handleUserClick(user)}
+              >
+                <Avatar src={user.profilepic} size="sm" />
+                <Text fontWeight="bold">{user.username}</Text>
+                {newMessageUsers[user._id] > 0 && (
+                  <Badge colorScheme="green" borderRadius="full" px={2}>
+                    {newMessageUsers[user._id]}
+                  </Badge>
+                )}
+                {onlineUser.includes(user._id) && (
+                  <Badge colorScheme="blue">Online</Badge>
+                )}
+              </HStack>
+            ))
+          )}
+        </VStack>
       )}
-    </div>
+
+      {/* Logout */}
+      <HStack w="full" justify="flex-start">
+        <IconButton
+          icon={<BiLogOut />}
+          onClick={handleLogOut}
+          colorScheme="red"
+          variant="outline"
+          aria-label="Logout"
+          isLoading={loading}
+        />
+        <Text>Logout</Text>
+      </HStack>
+    </VStack>
   );
 };
 

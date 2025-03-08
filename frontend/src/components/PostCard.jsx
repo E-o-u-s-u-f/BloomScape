@@ -1,3 +1,4 @@
+// PostCard.jsx
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,13 +14,23 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "./PostCard.css";
 
-const PostCard = ({ profileName, title, time, content, imageUrls, postId, comments, onLike }) => {
+const PostCard = ({
+  profileName,
+  title,
+  time,
+  content,
+  imageUrls,
+  postId,
+  comments,
+  onLike,
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [commentList, setCommentList] = useState(comments || []);
+  const [showComments, setShowComments] = useState(false);
 
   const handleFollow = () => setIsFollowing(!isFollowing);
   const handleLike = () => {
@@ -27,28 +38,35 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
     onLike(postId);
   };
   const handleBookmark = () => setIsBookmarked(!isBookmarked);
+  const toggleComments = () => setShowComments(!showComments);
 
-  const nextImage = () => setCurrentIndex((prev) => (prev + 1) % imageUrls.length);
-  const prevImage = () => setCurrentIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
+  const nextImage = () =>
+    setCurrentIndex((prev) => (prev + 1) % imageUrls.length);
+  const prevImage = () =>
+    setCurrentIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1));
 
-  const normalizedImageUrls = imageUrls.map((img) => (typeof img === "string" ? img : img.url));
+  const normalizedImageUrls = imageUrls.map((img) =>
+    typeof img === "string" ? img : img.url
+  );
 
-  // ✅ Handle adding a new comment
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
     try {
-      const userId = localStorage.getItem("user"); // ✅ Ensure we get userId
+      const userId = localStorage.getItem("user");
       if (!userId) {
         console.error("No userId found in localStorage");
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newComment, userId }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/posts/${postId}/comments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: newComment, userId }),
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -64,10 +82,9 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
     }
   };
 
-  // ✅ Handle deleting a comment
   const handleDeleteComment = async (commentId) => {
     try {
-      const userId = localStorage.getItem("userId"); // ✅ Ensure consistency
+      const userId = localStorage.getItem("userId");
       if (!userId) {
         console.error("No userId found in localStorage");
         return;
@@ -88,7 +105,9 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
         throw new Error("Failed to delete comment");
       }
 
-      setCommentList((prevComments) => prevComments.filter((comment) => comment._id !== commentId));
+      setCommentList((prevComments) =>
+        prevComments.filter((comment) => comment._id !== commentId)
+      );
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -104,8 +123,14 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
           <div className="user-meta">
             <div className="user-actions">
               <h3 className="username">{profileName}</h3>
-              <button className={`follow-toggle ${isFollowing ? "followed" : ""}`} onClick={handleFollow}>
-                <FontAwesomeIcon icon={isFollowing ? faCheck : faUserPlus} className="toggle-icon" />
+              <button
+                className={`follow-toggle ${isFollowing ? "followed" : ""}`}
+                onClick={handleFollow}
+              >
+                <FontAwesomeIcon
+                  icon={isFollowing ? faCheck : faUserPlus}
+                  className="toggle-icon"
+                />
                 <span>{isFollowing ? "Following" : "Follow"}</span>
               </button>
             </div>
@@ -115,11 +140,18 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
 
         <section className="post-body">
           <h2 className="post-title">{title || "No Title Provided"}</h2>
-          <div className="post-content" dangerouslySetInnerHTML={{ __html: content }} />
+          <div
+            className="post-content"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
 
           {normalizedImageUrls.length > 0 && (
             <div className="media-container">
-              <img src={normalizedImageUrls[currentIndex]} alt={`Post media ${currentIndex + 1}`} className="media-image" />
+              <img
+                src={normalizedImageUrls[currentIndex]}
+                alt={`Post media ${currentIndex + 1}`}
+                className="media-image"
+              />
               {normalizedImageUrls.length > 1 && (
                 <>
                   <button className="nav-arrow prev" onClick={prevImage}>
@@ -135,41 +167,61 @@ const PostCard = ({ profileName, title, time, content, imageUrls, postId, commen
         </section>
 
         <footer className="post-footer">
-          <button className={`action-btn ${isLiked ? "active" : ""}`} onClick={handleLike}>
+          <button
+            className={`action-btn ${isLiked ? "active" : ""}`}
+            onClick={handleLike}
+          >
             <FontAwesomeIcon icon={faHeart} className="action-icon" />
             <span>Like</span>
           </button>
-          <button className="action-btn">
+          <button
+            className={`action-btn ${showComments ? "active" : ""}`}
+            onClick={toggleComments}
+          >
             <FontAwesomeIcon icon={faComment} className="action-icon" />
             <span>Comment ({commentList.length})</span>
           </button>
-          <button className={`action-btn ${isBookmarked ? "active" : ""}`} onClick={handleBookmark}>
+          <button
+            className={`action-btn ${isBookmarked ? "active" : ""}`}
+            onClick={handleBookmark}
+          >
             <FontAwesomeIcon icon={faBookmark} className="action-icon" />
             <span>Bookmark</span>
           </button>
         </footer>
 
-        {/* ✅ Comments Section */}
-        <section className="comments-section">
-          <h4>Comments</h4>
-          <ul className="comment-list">
-            {commentList.map((comment) => (
-              <li key={comment._id} className="comment-item">
-                <span>{comment.text}</span>
-                {comment.userId === localStorage.getItem("userId") && (
-                  <button className="delete-comment-btn" onClick={() => handleDeleteComment(comment._id)}>
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
+        {showComments && (
+          <section
+            className={`comments-section ${showComments ? "visible" : ""}`}
+          >
+            <h4>Comments</h4>
+            <ul className="comment-list">
+              {commentList.map((comment) => (
+                <li key={comment._id} className="comment-item">
+                  <span>{comment.text}</span>
+                  {comment.userId === localStorage.getItem("userId") && (
+                    <button
+                      className="delete-comment-btn"
+                      onClick={() => handleDeleteComment(comment._id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
 
-          <div className="add-comment">
-            <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Write a comment..." />
-            <button onClick={handleAddComment}>Post</button>
-          </div>
-        </section>
+            <div className="add-comment">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+              />
+              <button onClick={handleAddComment}>Post</button>
+            </div>
+          </section>
+        )}
       </div>
     </article>
   );

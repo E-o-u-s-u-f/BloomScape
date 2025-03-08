@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
-import { Box, Center, Image, Spinner, Text, Stack, Button, Input, Textarea, Flex } from "@chakra-ui/react";
+import {
+  Box,
+  Center,
+  Image,
+  Spinner,
+  Text,
+  Stack,
+  Button,
+  Input,
+  Textarea,
+  Flex,
+  useColorMode, // Add this import
+} from "@chakra-ui/react";
 import axios from "axios";
 
 // Set axios defaults
-axios.defaults.baseURL = "http://localhost:5000"; // Adjust if your server runs on a different port
-axios.defaults.withCredentials = true; // Enable sending cookies with requests
+axios.defaults.baseURL = "http://localhost:5000";
+axios.defaults.withCredentials = true;
 
 const initialProfile = {
   fullName: "",
@@ -15,6 +27,7 @@ const initialProfile = {
 };
 
 export default function ProfileCard() {
+  const { colorMode } = useColorMode(); // Add this hook
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(initialProfile);
@@ -59,12 +72,16 @@ export default function ProfileCard() {
         const formData = new FormData();
         formData.append("profilePicture", selectedImage);
 
-        const imageResponse = await axios.post("/api/profile/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          withCredentials: true, // Ensure cookies are sent
-        });
+        const imageResponse = await axios.post(
+          "/api/profile/upload",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            withCredentials: true,
+          }
+        );
 
         if (imageResponse.data.success) {
           uploadedImageUrl = imageResponse.data.imageUrl;
@@ -82,7 +99,7 @@ export default function ProfileCard() {
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true, // Ensure cookies are sent
+        withCredentials: true,
       });
 
       if (response.data.success) {
@@ -105,39 +122,85 @@ export default function ProfileCard() {
         p={6}
         maxW={"500px"}
         w={"full"}
-        bg={"white"}
+        bg={colorMode === "light" ? "white" : "gray.800"} // Dynamic background
+        color={colorMode === "light" ? "gray.800" : "white"} // Dynamic text color
         boxShadow={"lg"}
         rounded={"lg"}
         pos={"relative"}
         zIndex={1}
         transition="all 0.3s ease"
-        _hover={{ transform: "scale(1.05)", boxShadow: "xl" }}
+        _hover={{
+          transform: "scale(1.05)",
+          boxShadow: "xl",
+        }}
       >
         <Flex align={"center"} direction={"column"}>
-          <Box rounded={"full"} overflow={"hidden"} height={"150px"} width={"150px"} boxShadow={"md"} mb={4}>
+          <Box
+            rounded={"full"}
+            overflow={"hidden"}
+            height={"150px"}
+            width={"150px"}
+            boxShadow={"md"}
+            mb={4}
+            bg={colorMode === "light" ? "gray.100" : "gray.700"} // Dynamic image container bg
+          >
             {loading ? (
               <Spinner size="xl" />
             ) : selectedImage ? (
-              <Image height={"full"} width={"full"} objectFit={"cover"} src={URL.createObjectURL(selectedImage)} alt="Profile Preview" />
+              <Image
+                height={"full"}
+                width={"full"}
+                objectFit={"cover"}
+                src={URL.createObjectURL(selectedImage)}
+                alt="Profile Preview"
+              />
             ) : profile.profilePicture ? (
-              <Image height={"full"} width={"full"} objectFit={"cover"} src={profile.profilePicture} alt="Profile" />
+              <Image
+                height={"full"}
+                width={"full"}
+                objectFit={"cover"}
+                src={profile.profilePicture}
+                alt="Profile"
+              />
             ) : (
-              <Box height={"full"} width={"full"} bg={"gray.200"} borderRadius="full" display="flex" justifyContent="center" alignItems="center">
+              <Box
+                height={"full"}
+                width={"full"}
+                bg={colorMode === "light" ? "gray.200" : "gray.600"} // Dynamic no-image bg
+                borderRadius="full"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+              >
                 <Text>No Image</Text>
               </Box>
             )}
           </Box>
 
-          {isEditing && <Input type="file" accept="image/*" onChange={handleImageChange} mt={2} size="sm" />}
+          {isEditing && (
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              mt={2}
+              size="sm"
+            />
+          )}
 
           <Stack align={"center"} spacing={2}>
             {isEditing ? (
               <Input
                 value={editedProfile.fullName}
-                onChange={(e) => setEditedProfile({ ...editedProfile, fullName: e.target.value })}
+                onChange={(e) =>
+                  setEditedProfile({
+                    ...editedProfile,
+                    fullName: e.target.value,
+                  })
+                }
                 fontSize={"2xl"}
                 fontWeight={600}
                 textAlign={"center"}
+                bg={colorMode === "light" ? "white" : "gray.700"} // Dynamic input bg
               />
             ) : (
               <Text fontSize={"2xl"} fontWeight={600}>
@@ -147,12 +210,19 @@ export default function ProfileCard() {
             {isEditing ? (
               <Textarea
                 value={editedProfile.bio}
-                onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
+                onChange={(e) =>
+                  setEditedProfile({ ...editedProfile, bio: e.target.value })
+                }
                 fontSize={"md"}
                 textAlign={"center"}
+                bg={colorMode === "light" ? "white" : "gray.700"} // Dynamic textarea bg
               />
             ) : (
-              <Text color={"gray.500"} fontSize={"md"} textAlign={"center"}>
+              <Text
+                color={colorMode === "light" ? "gray.500" : "gray.400"} // Dynamic bio color
+                fontSize={"md"}
+                textAlign={"center"}
+              >
                 {profile.bio || "No Bio Provided"}
               </Text>
             )}
@@ -165,11 +235,26 @@ export default function ProfileCard() {
           )}
 
           {isEditing ? (
-            <Button mt={6} colorScheme="green" size="md" rounded="full" px={6} onClick={handleSave} isLoading={loading}>
+            <Button
+              mt={6}
+              colorScheme="green"
+              size="md"
+              rounded="full"
+              px={6}
+              onClick={handleSave}
+              isLoading={loading}
+            >
               Save Profile
             </Button>
           ) : (
-            <Button mt={6} colorScheme="blue" size="md" rounded="full" px={6} onClick={() => setIsEditing(true)}>
+            <Button
+              mt={6}
+              colorScheme="blue"
+              size="md"
+              rounded="full"
+              px={6}
+              onClick={() => setIsEditing(true)}
+            >
               Edit Profile
             </Button>
           )}

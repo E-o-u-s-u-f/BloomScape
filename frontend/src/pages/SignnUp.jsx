@@ -10,11 +10,13 @@ import {
   chakra,
   Box,
   Link,
-  Avatar,
   FormControl,
   InputRightElement,
+  Text,
+  Icon,
 } from "@chakra-ui/react";
 import { FaUserAlt, FaLock, FaEnvelope } from "react-icons/fa";
+import { GiPlantRoots } from "react-icons/gi"; // Plant icon for gardening theme
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -46,6 +48,7 @@ const SignUp = () => {
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Confirm Password is required"),
   });
+
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const response = await axios.post("http://localhost:5000/api/users", {
@@ -53,7 +56,6 @@ const SignUp = () => {
         email: values.email,
         password: values.password,
       });
-      
       alert(response.data.message);
       navigate(`/otp-verification?email=${encodeURIComponent(values.email)}`);
       resetForm();
@@ -67,209 +69,224 @@ const SignUp = () => {
       flexDirection="column"
       width="100vw"
       height="100vh"
-      backgroundColor="gray.200"
+      bgGradient="linear(to-b, green.50, green.200)" // Gradient background
+      position="relative"
+      _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        bgRepeat: "repeat",
+        bgSize: "200px",
+        opacity: 0.2,
+        zIndex: -1,
+      }}
       justifyContent="center"
       alignItems="center"
     >
-      <Stack
-        flexDir="column"
-        mb="2"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Avatar bg="teal.500" />
-        <Heading color="teal.400">Create Account</Heading>
-        <Box minW={{ base: "90%", md: "468px" }}>
-          <Formik
-            initialValues={{
-              fullName: "",
-              email: "",
-              password: "",
-              confirmPassword: "",
-            }}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            <Form autoComplete="off">
-              <Stack
-                spacing={4}
-                p="1rem"
-                backgroundColor="white"
-                boxShadow="md"
-                borderRadius="md"
-              >
-                {/* Full Name */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      width="3rem"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <CFaUserAlt color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type="text"
-                      name="fullName"
-                      placeholder="Full Name"
-                      required
-                      focusBorderColor="teal.500"
-                      paddingLeft="3.5rem" // To ensure space for icon
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                  </InputGroup>
-                  <ErrorMessage
-                    name="fullName"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                </FormControl>
-
-                {/* Email */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      width="3rem"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <CFaEnvelope color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type="email"
-                      name="email"
-                      placeholder="Email address"
-                      required
-                      focusBorderColor="teal.500"
-                      paddingLeft="3.5rem" // To ensure space for icon
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                  </InputGroup>
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                </FormControl>
-
-                {/* Password */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      width="3rem"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <CFaLock color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      placeholder="Password"
-                      required
-                      focusBorderColor="teal.500"
-                      paddingLeft="3.5rem" // To ensure space for icon
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                    <InputRightElement width="4rem">
-                      <Button
-                        h="1.75rem"
-                        size="sm"
-                        onClick={handleShowClick}
-                        colorScheme="teal"
-                      >
-                        {showPassword ? "Hide" : "Show"}
-                      </Button>
-                    </InputRightElement>
-                  </InputGroup>
-
-                  <ErrorMessage
-                    name="password"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                </FormControl>
-
-                {/* Confirm Password */}
-                <FormControl>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      width="3rem"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <CFaLock color="gray.500" />
-                    </InputLeftElement>
-                    <Field
-                      as={Input}
-                      type={showPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      placeholder="Confirm Password"
-                      required
-                      focusBorderColor="teal.500"
-                      paddingLeft="3.5rem" // To ensure space for icon
-                      color="black"
-                      _placeholder={{ color: "gray.500" }}
-                      borderColor="teal"
-                      borderWidth="2px"
-                      _focus={{ borderColor: "teal.500", borderWidth: "2px" }}
-                      _hover={{ borderColor: "teal.500" }}
-                      autoComplete="off"
-                    />
-                  </InputGroup>
-                  <ErrorMessage
-                    name="confirmPassword"
-                    component="div"
-                    style={{ color: "red" }}
-                  />
-                </FormControl>
-
-                <Button
+      <Stack spacing={8} align="center">
+        {/* Tagline */}
+        <Text fontSize="2xl" color="green.700" fontWeight="bold">
+          Start growing with us!
+        </Text>
+        <Stack
+          flexDir="column"
+          mb="2"
+          justifyContent="center"
+          alignItems="center"
+        >
+          {/* Plant Icon */}
+          <Icon as={GiPlantRoots} w={10} h={10} color="green.500" />
+          <Heading color="green.500">Join the Garden Community</Heading>
+          <Box minW={{ base: "90%", md: "468px" }}>
+            <Formik
+              initialValues={{
+                fullName: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+              }}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+            >
+              <Form autoComplete="off">
+                <Stack
+                  spacing={4}
+                  p="1rem"
+                  backgroundColor="green.50" // Form background
+                  boxShadow="md"
                   borderRadius="md"
-                  type="submit"
-                  variant="solid"
-                  colorScheme="teal"
-                  width="full"
+                  border="1px solid"
+                  borderColor="green.200" // Subtle border
                 >
-                  Sign Up
-                </Button>
-              </Stack>
-            </Form>
-          </Formik>
+                  {/* Full Name */}
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaUserAlt color="green.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        type="text"
+                        name="fullName"
+                        placeholder="Full Name"
+                        required
+                        focusBorderColor="green.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="green.200"
+                        borderWidth="2px"
+                        _focus={{
+                          borderColor: "green.500",
+                          borderWidth: "2px",
+                        }}
+                        _hover={{ borderColor: "green.500" }}
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+                    <ErrorMessage
+                      name="fullName"
+                      component="div"
+                      style={{ color: "red" }}
+                    />
+                  </FormControl>
+
+                  {/* Email */}
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaEnvelope color="green.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        type="email"
+                        name="email"
+                        placeholder="Email address"
+                        required
+                        focusBorderColor="green.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="green.200"
+                        borderWidth="2px"
+                        _focus={{
+                          borderColor: "green.500",
+                          borderWidth: "2px",
+                        }}
+                        _hover={{ borderColor: "green.500" }}
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+                    <ErrorMessage
+                      name="email"
+                      component="div"
+                      style={{ color: "red" }}
+                    />
+                  </FormControl>
+
+                  {/* Password */}
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaLock color="green.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Password"
+                        required
+                        focusBorderColor="green.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="green.200"
+                        borderWidth="2px"
+                        _focus={{
+                          borderColor: "green.500",
+                          borderWidth: "2px",
+                        }}
+                        _hover={{ borderColor: "green.500" }}
+                        autoComplete="off"
+                      />
+                      <InputRightElement width="4rem">
+                        <Button
+                          h="1.75rem"
+                          size="sm"
+                          onClick={handleShowClick}
+                          colorScheme="gray" // Neutral for contrast
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </Button>
+                      </InputRightElement>
+                    </InputGroup>
+                    <ErrorMessage
+                      name="password"
+                      component="div"
+                      style={{ color: "red" }}
+                    />
+                  </FormControl>
+
+                  {/* Confirm Password */}
+                  <FormControl>
+                    <InputGroup>
+                      <InputLeftElement pointerEvents="none">
+                        <CFaLock color="green.500" />
+                      </InputLeftElement>
+                      <Field
+                        as={Input}
+                        type={showPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        required
+                        focusBorderColor="green.500"
+                        paddingLeft="3rem"
+                        color="black"
+                        _placeholder={{ color: "gray.500" }}
+                        borderColor="green.200"
+                        borderWidth="2px"
+                        _focus={{
+                          borderColor: "green.500",
+                          borderWidth: "2px",
+                        }}
+                        _hover={{ borderColor: "green.500" }}
+                        autoComplete="off"
+                      />
+                    </InputGroup>
+                    <ErrorMessage
+                      name="confirmPassword"
+                      component="div"
+                      style={{ color: "red" }}
+                    />
+                  </FormControl>
+
+                  {/* Sign Up Button */}
+                  <Button
+                    borderRadius="md"
+                    type="submit"
+                    variant="solid"
+                    colorScheme="green"
+                    width="full"
+                    _hover={{ transform: "scale(1.05)", boxShadow: "lg" }}
+                  >
+                    Sign Up
+                  </Button>
+                </Stack>
+              </Form>
+            </Formik>
+          </Box>
+        </Stack>
+        {/* Login Link */}
+        <Box mt={4} color="blackAlpha.500">
+          Already have an account?{" "}
+          <Link as={RouterLink} to="/login" color="green.500" fontWeight="bold">
+            Login
+          </Link>
         </Box>
       </Stack>
-
-      <Box color={"blackAlpha.500"}>
-        Already have an account?{" "}
-        <Link as={RouterLink} to="/login" color="teal.500">
-          Login
-        </Link>
-      </Box>
     </Flex>
   );
 };

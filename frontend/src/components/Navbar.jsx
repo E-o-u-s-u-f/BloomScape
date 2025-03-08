@@ -52,7 +52,10 @@ const Navbar = () => {
           setUser(null);
         }
       } catch (error) {
-        console.error("Error fetching user in Navbar:", error.response?.data || error.message);
+        console.error(
+          "Error fetching user in Navbar:",
+          error.response?.data || error.message
+        );
         setUser(null); // Clear user on error (e.g., not logged in)
       }
     };
@@ -94,6 +97,7 @@ const Navbar = () => {
                   objectFit="contain"
                   transition="all 0.2s"
                   _hover={{ transform: "scale(1.05)" }}
+                  mt={4}
                 />
               </Link>
             </HStack>
@@ -127,7 +131,9 @@ const Navbar = () => {
                     />
                   </MenuButton>
                   <MenuList>
-                    <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
+                    <MenuItem onClick={() => navigate("/profile")}>
+                      Profile
+                    </MenuItem>
                     <MenuItem onClick={handleLogout}>Logout</MenuItem>
                   </MenuList>
                 </Menu>
@@ -162,7 +168,11 @@ const Navbar = () => {
                 size="md"
                 _hover={{ transform: "scale(1.05)" }}
               >
-                {colorMode === "light" ? <IoMoon size={20} /> : <LuSun size={20} />}
+                {colorMode === "light" ? (
+                  <IoMoon size={20} />
+                ) : (
+                  <LuSun size={20} />
+                )}
               </Button>
             </HStack>
           </Flex>
@@ -257,19 +267,20 @@ const Navbar = () => {
                 Create
               </Button>
             </Link>
-            {user && user.role === "admin" && ( // Only show Admin for admins
-              <Link to="/admin">
-                <Button
-                  w="100%"
-                  mb={4}
-                  colorScheme="teal"
-                  variant="outline"
-                  _hover={{ transform: "scale(1.05)" }}
-                >
-                  Admin
-                </Button>
-              </Link>
-            )}
+            {user &&
+              user.role === "admin" && ( // Only show Admin for admins
+                <Link to="/admin">
+                  <Button
+                    w="100%"
+                    mb={4}
+                    colorScheme="teal"
+                    variant="outline"
+                    _hover={{ transform: "scale(1.05)" }}
+                  >
+                    Admin
+                  </Button>
+                </Link>
+              )}
           </DrawerBody>
 
           <DrawerFooter>
