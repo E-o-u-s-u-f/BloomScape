@@ -13,6 +13,9 @@ import userRoute from "./route&controller/userRoute.js";
 import { app, server } from "./Socket/socket.js";
 import islogin from "./middleware/islogin.js";
 import profile from "./Profile/profileroute.js";
+import commentRoute from "./route&controller/commentRoute.js";
+import multer from "multer";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -26,6 +29,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
+
+// Multer configuration for file upload
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -48,7 +55,108 @@ app.use("/api/multiple", multipleuploads);
 app.use("/api/massage", massageroute);
 app.use("/api/user", userRoute);
 app.use("/api", profile);
+app.use("/api/posts", commentRoute);
 
+// Profile Picture Upload API
+app.post("/api/profile/upload", islogin, upload.single("profilePicture"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({ success: false, message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: "profile_pictures",
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(req.file.buffer);
+    });
+
+    user.profilePicture = result.secure_url;
+    await user.save();
+
+    res.json({
+      success: true,
+      imageUrl: result.secure_url,
+      user: {
+        fullName: user.fullName,
+        email: user.email,
+        bio: user.bio,
+        profilePicture: user.profilePicture,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Profile upload error:", error);
+    res.status(500).json({ success: false, message: "Server error during upload" });
+  }
+});
+
+// Profile Update API (New Endpoint)
+app.put("/api/profile", islogin, async (req, res) => {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({ success: false, message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const { fullName, email, bio, profilePicture } = req.body;
+
+    // Update only provided fields
+    if (fullName) user.fullName = fullName;
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: "Email already in use" });
+      }
+      user.email = email;
+    }
+    if (bio) user.bio = bio;
+    if (profilePicture) user.profilePicture = profilePicture;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      user: {
+        fullName: user.fullName,
+        email: user.email,
+        bio: user.bio,
+        profilePicture: user.profilePicture,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ success: false, message: "Server error during profile update" });
+  }
+});
+
+// Existing routes...
 app.post("/api/users", async (req, res) => {
   const { fullName, email, password } = req.body;
 

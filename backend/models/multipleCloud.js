@@ -24,8 +24,12 @@ const schema = new mongoose.Schema({
     adminStatus: { 
         type: Boolean, 
         default: false 
-    }
-    
+    },
+    comments: [{
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
+        text: { type: String, required: true },  
+        timestamp: { type: Date, default: Date.now }  
+    }]
 },{timestamps:true});
 
 export const MultipleCloud = mongoose.model("MultipleCloud", schema);

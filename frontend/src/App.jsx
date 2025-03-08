@@ -38,13 +38,14 @@ function App() {
         {/* Protected Routes wrapped inside VerifyUser */}
         <Route element={<VerifyUser />}>
           <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+          <Route path="/search/:keyword" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="/aboutus" element={<ProtectedRoute><AboutUs /></ProtectedRoute>} />
           <Route path="/resources" element={<ProtectedRoute><Resource /></ProtectedRoute>} />
           <Route path="/event" element={<ProtectedRoute><Event /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/create" element={<ProtectedRoute><Post /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute adminOnly={true}><AdminPanel /></ProtectedRoute>} />
           <Route path="/articles" element={<ProtectedRoute><Articles /></ProtectedRoute>} />
           <Route path="/articles/:id" element={<ProtectedRoute><ArticleDetail /></ProtectedRoute>} />
         </Route>

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { FaSmile } from "react-icons/fa"; // Removed unused icons since Jodit has its own toolbar
+import { FaSmile } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import Picker from "emoji-picker-react";
 import { useToast } from "@chakra-ui/react";
@@ -12,63 +12,104 @@ export default function Post() {
   const [imageFiles, setImageFiles] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [existingContents, setExistingContents] = useState([]);
+  const [userName, setUserName] = useState("");
   const fileInputRef = useRef(null);
   const editorRef = useRef(null);
   const toast = useToast();
 
   useEffect(() => {
-    console.log("Fetching existing contents...");
-    fetch("http://localhost:5000/api/multiple/cloud/contents")
+    const token = localStorage.getItem("token");
+    console.log("Token:", token); // Debug token
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "Please log in to create a post",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    fetch("http://localhost:5000/api/multiple/cloud/contents", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
-        console.log("Fetched contents:", data);
+        console.log("Existing contents:", data); // Debug contents
         setExistingContents(data);
       })
       .catch((error) => console.error("Error fetching contents:", error));
+
+      fetch("http://localhost:5000/api/user/profile", {
+        credentials: "include", // Send cookies with the request
+      })
+        .then((res) => {
+          console.log("Profile fetch status:", res.status);
+          if (!res.ok) throw new Error("Failed to fetch user profile");
+          return res.json();
+        })
+        .then((data) => {
+          console.log("Profile data:", data);
+          setUserName(data.fullName);
+        })
+        .catch((error) => {
+          console.error("Error fetching user name:", error);
+          toast({
+            title: "Error",
+            description: "Could not fetch user profile",
+            status: "error",
+            duration: 4000,
+            isClosable: true,
+          });
+        });
   }, []);
 
   const validationSchema = Yup.object({
-    profileName: Yup.string()
-      .min(3, "Must be at least 3 characters")
-      .required("Required"),
     title: Yup.string()
-      .min(3, "Title must be at least 5 characters")
+      .min(3, "Title must be at least 3 characters")
       .required("Required"),
     content: Yup.string()
       .test("min-length", "Post must be at least 10 characters", (value) => {
         if (!value) return false;
-        const textContent = value.replace(/<[^>]*>/g, ""); // Strip HTML tags
+        const textContent = value.replace(/<[^>]*>/g, "");
         return textContent.length >= 10;
       })
       .test("is-duplicate", "Content already exists", (value) => {
-        if (!value) return true; // Skip if empty
-        const textContent = value.replace(/<[^>]*>/g, ""); // Strip HTML tags
-        return !existingContents.includes(textContent); // Assumes existingContents is plain text
+        if (!value) return true;
+        const textContent = value.replace(/<[^>]*>/g, "");
+        console.log("Checking duplicate:", textContent, existingContents); // Debug duplicate check
+        return !existingContents.some((content) => content === textContent);
       })
       .required("Required"),
   });
 
   const formik = useFormik({
-    initialValues: { profileName: "", title: "", content: "" },
+    initialValues: { title: "", content: "" },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      console.log("Submitting form with values:", values);
+      console.log("Submitting with:", { ...values, profileName: userName });
       try {
         const formData = new FormData();
         imageFiles.forEach((file) => formData.append("files", file));
-        formData.append("profileName", values.profileName);
+        formData.append("profileName", userName);
         formData.append("title", values.title);
-        formData.append("content", values.content); // This will send HTML content
+        formData.append("content", values.content);
 
-        const response = await fetch(
-          "http://localhost:5000/api/multiple/cloud",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:5000/api/multiple/cloud", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
 
+        console.log("Response status:", response.status); // Debug response
         const data = await response.json();
+        console.log("Response data:", data); // Debug data
         if (response.ok) {
           toast({
             title: "✅ Post Uploaded!",
@@ -123,6 +164,9 @@ export default function Post() {
     <div className="post-container">
       <div className="post-card">
         <h2 className="post-title">Create Post</h2>
+        <div className="post-name-display">
+          <strong>Posting as:</strong> {userName || "Loading..."}
+        </div>
         <form onSubmit={formik.handleSubmit} className="post-form">
           <input
             type="text"
@@ -134,25 +178,13 @@ export default function Post() {
             <div className="error-message">{formik.errors.title}</div>
           )}
 
-          <input
-            type="text"
-            className="post-name-input"
-            placeholder="Your name"
-            {...formik.getFieldProps("profileName")}
-          />
-          {formik.touched.profileName && formik.errors.profileName && (
-            <div className="error-message">{formik.errors.profileName}</div>
-          )}
-
           <div className="textarea-container">
             <JoditEditor
               ref={editorRef}
               value={formik.values.content}
               config={editorConfig}
               tabIndex={1}
-              onBlur={(newContent) =>
-                formik.setFieldValue("content", newContent)
-              }
+              onBlur={(newContent) => formik.setFieldValue("content", newContent)}
               onChange={(newContent) => {}}
             />
           </div>
@@ -224,7 +256,7 @@ export default function Post() {
           <button
             type="submit"
             className="post-submit"
-            disabled={!formik.isValid || formik.isSubmitting}
+            disabled={!formik.isValid || formik.isSubmitting || !userName}
           >
             Post
           </button>

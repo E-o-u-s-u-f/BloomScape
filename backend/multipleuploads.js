@@ -120,6 +120,16 @@ router.get("/cloud", async (req, res) => {
   }
 });
 
+// Add missing /contents route for duplicate check
+router.get("/contents", async (req, res) => {
+  try {
+    const posts = await MultipleCloud.find().select("content");
+    res.json(posts.map((post) => post.content));
+  } catch (error) {
+    console.error("Error fetching contents:", error);
+    res.status(500).json({ message: "Error fetching contents" });
+  }
+});
 router.post("/cloud", uploadMultipleCloud, async (req, res) => {
   try {
     const files = req.files;

@@ -19,20 +19,18 @@ import {
   MenuList,
   MenuItem,
 } from "@chakra-ui/react";
-import { useAuth } from "../Context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { IoMoon } from "react-icons/io5";
 import { LuSun } from "react-icons/lu";
 import { IoMdChatboxes, IoMdMenu } from "react-icons/io";
 import { useEffect, useState } from "react";
+import axios from "axios"; // Add axios for fetching user
 import Chat from "../Chat/Chatpage";
 import logo from "../assets/kkk[1].png";
-import SearchBox from "./SearchBox";
-
+import SearchBox from "../components/SearchBox";
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const {logout} =useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -41,19 +39,35 @@ const Navbar = () => {
     onClose: onClosechat,
   } = useDisclosure();
 
-
-
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/profile", {
+          withCredentials: true, // Send jwt cookie
+        });
+        console.log("Navbar user response:", response.data); // Debug
+        if (response.data.success && response.data.user) {
+          setUser(response.data.user); // { fullName, role }
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user in Navbar:", error.response?.data || error.message);
+        setUser(null); // Clear user on error (e.g., not logged in)
+      }
+    };
+    fetchUser();
   }, []);
+
   const handleLogout = () => {
-    logout(navigate); // Use the logout function from context
-
+    axios
+      .post("http://localhost:5000/api/logout", {}, { withCredentials: true })
+      .then(() => {
+        setUser(null); // Clear user state
+        navigate("/login"); // Redirect to login
+      })
+      .catch((error) => console.error("Logout error:", error));
   };
-
 
   return (
     <Box>
@@ -76,8 +90,8 @@ const Navbar = () => {
                   src={logo}
                   alt="BloomScape Logo"
                   height="75px"
-                  width="250px" // Increased width from auto to 150px
-                  objectFit="contain" // Ensures logo scales properly
+                  width="250px"
+                  objectFit="contain"
                   transition="all 0.2s"
                   _hover={{ transform: "scale(1.05)" }}
                 />
@@ -90,23 +104,22 @@ const Navbar = () => {
 
             <HStack spacing={4} alignItems="center">
               <Link to="/chat">
-              <Button
-                onClick={onOpenchat}
-                colorScheme="teal"
-                variant="outline"
-                size="md"
-                _hover={{ transform: "scale(1.05)" }}
-              >
-                <IoMdChatboxes size={20} />
-              </Button>
+                <Button
+                  onClick={onOpenchat}
+                  colorScheme="teal"
+                  variant="outline"
+                  size="md"
+                  _hover={{ transform: "scale(1.05)" }}
+                >
+                  <IoMdChatboxes size={20} />
+                </Button>
               </Link>
-  
 
               {user ? (
                 <Menu>
                   <MenuButton as={Button} rounded="full" variant="link">
                     <Avatar
-                      name={user.name}
+                      name={user.fullName} // Use fullName from backend
                       src={user.profilePicture || ""}
                       size="md"
                       transition="all 0.2s"
@@ -114,9 +127,7 @@ const Navbar = () => {
                     />
                   </MenuButton>
                   <MenuList>
-                    <MenuItem onClick={() => navigate("/profile")}>
-                      Profile
-                    </MenuItem>
+                    <MenuItem onClick={() => navigate("/profile")}>Profile</MenuItem>
                     <MenuItem onClick={handleLogout}>Logout</MenuItem>
                   </MenuList>
                 </Menu>
@@ -151,11 +162,7 @@ const Navbar = () => {
                 size="md"
                 _hover={{ transform: "scale(1.05)" }}
               >
-                {colorMode === "light" ? (
-                  <IoMoon size={20} />
-                ) : (
-                  <LuSun size={20} />
-                )}
+                {colorMode === "light" ? <IoMoon size={20} /> : <LuSun size={20} />}
               </Button>
             </HStack>
           </Flex>
@@ -250,17 +257,19 @@ const Navbar = () => {
                 Create
               </Button>
             </Link>
-            <Link to="/admin">
-              <Button
-                w="100%"
-                mb={4}
-                colorScheme="teal"
-                variant="outline"
-                _hover={{ transform: "scale(1.05)" }}
-              >
-                Admin
-              </Button>
-            </Link>
+            {user && user.role === "admin" && ( // Only show Admin for admins
+              <Link to="/admin">
+                <Button
+                  w="100%"
+                  mb={4}
+                  colorScheme="teal"
+                  variant="outline"
+                  _hover={{ transform: "scale(1.05)" }}
+                >
+                  Admin
+                </Button>
+              </Link>
+            )}
           </DrawerBody>
 
           <DrawerFooter>

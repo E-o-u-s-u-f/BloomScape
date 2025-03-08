@@ -17,7 +17,6 @@ const HomePage = () => {
     if (minutes < 60) return `${minutes} minutes ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours} hours ago`;
-
     const options = { month: "short", day: "numeric" };
     return `Posted on ${postDate.toLocaleDateString(undefined, options)}`;
   };
@@ -26,38 +25,41 @@ const HomePage = () => {
     console.log("Liked post:", postId);
   };
 
-  const handleComment = (postId) => {
-    console.log("Commented on post:", postId);
-  };
-
   useEffect(() => {
     const url = keyword
       ? `http://localhost:5000/api/multiple/cloud/search?title=${keyword}`
       : `http://localhost:5000/api/multiple/cloud`;
 
-    // Fetch posts from the backend
-    fetch(url)
-      .then((response) => response.json())
+    const token = localStorage.getItem("token");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    fetch(url, { headers })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json();
+      })
       .then((data) => {
-        console.log("Raw API response:", data); // Add this to debug raw data
+        console.log("Raw API response:", data);
+        if (!Array.isArray(data)) {
+          console.error("Expected an array, got:", data);
+          setPosts([]);
+          return;
+        }
+
         const approvedPosts = data
           .filter((post) => post.adminStatus === true)
           .map((post) => {
-            let formattedTime = "Unknown time"; // Default fallback
-
-            if (post.createdAt) {
-              formattedTime = timeAgo(post.createdAt);
-            } else if (post.updatedAt) {
-              formattedTime = timeAgo(post.updatedAt);
-            }
-
-            return { ...post, time: formattedTime };
-          });
-
-        // Sort posts by createdAt in descending order (latest first)
-        approvedPosts.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
+            let formattedTime = "Unknown time";
+            if (post.createdAt) formattedTime = timeAgo(post.createdAt);
+            else if (post.updatedAt) formattedTime = timeAgo(post.updatedAt);
+            return {
+              ...post,
+              time: formattedTime,
+              image: Array.isArray(post.image) ? post.image : [],
+              comments: Array.isArray(post.comments) ? post.comments : [],
+            };
+          })
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         setPosts(approvedPosts);
       })
@@ -70,26 +72,21 @@ const HomePage = () => {
   return (
     <>
       <div className="App">
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
           {posts.length === 0 ? (
             <p>No approved posts available.</p>
           ) : (
-            posts.map((post, index) => (
+            posts.map((post) => (
               <PostCard
-                key={index}
+                key={post._id}
                 profileName={post.profileName}
-                title={post.title} // Add this to pass the title
-                time={post.time} // Readable time format like "2 hours ago" or "Posted on Feb 21"
+                title={post.title}
+                time={post.time}
                 content={post.content}
-                imageUrls={post.image.map((img) => img.url)} // Pass multiple images
+                imageUrls={post.image.map((img) => img.url || "")}
+                postId={post._id}
+                comments={post.comments}
                 onLike={() => handleLike(post._id)}
-                onComment={() => handleComment(post._id)}
               />
             ))
           )}

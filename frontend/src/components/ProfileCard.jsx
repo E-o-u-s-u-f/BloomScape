@@ -1,79 +1,101 @@
 import { useState, useEffect } from "react";
-import { Box, Center, useColorModeValue, Heading, Text, Stack, Image, Button, Flex, Input, Textarea, Spinner } from "@chakra-ui/react";
-import { FaFacebookF, FaSquareInstagram, FaXTwitter } from "react-icons/fa6";
+import { Box, Center, Image, Spinner, Text, Stack, Button, Input, Textarea, Flex } from "@chakra-ui/react";
 import axios from "axios";
 
-// Initial empty profile structure based on the backend data structure
+// Set axios defaults
+axios.defaults.baseURL = "http://localhost:5000"; // Adjust if your server runs on a different port
+axios.defaults.withCredentials = true; // Enable sending cookies with requests
+
 const initialProfile = {
   fullName: "",
   email: "",
   profilePicture: "",
   bio: "",
   role: "",
-  isVerified: false,
-  createdAt: null,
-  updatedAt: null,
 };
 
 export default function ProfileCard() {
-  const [profile, setProfile] = useState(initialProfile);  // Initialize with empty profile
+  const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState(initialProfile);  // Initially use empty profile
-  const [loading, setLoading] = useState(true); // Loading state
+  const [editedProfile, setEditedProfile] = useState(initialProfile);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Fetch user profile data from the backend
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("jwtToken"); // Assuming you store token in localStorage
-        console.log("Token: ", token); // Log token to ensure it's being fetched
-
-        const response = await axios.get("/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        console.log("Response Data: ", response.data);  // Log the response data
-
+        const response = await axios.get("/api/profile");
         if (response.data.success) {
-          console.log("Profile Data: ", response.data.user);  // Log the profile data
-          setProfile(response.data.user);  // Set the fetched profile data to state
-          setEditedProfile(response.data.user);  // Set the same data for editing
-        } else {
-          console.log("Profile fetch failed, setting to initial profile.");
-          setProfile(initialProfile);  // If no data, reset to initialProfile
+          setProfile(response.data.user);
+          setEditedProfile(response.data.user);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
-        setProfile(initialProfile);  // If error, reset to initialProfile
+        setError("Failed to load profile");
       } finally {
-        setLoading(false);  // Stop loading after fetch attempt
+        setLoading(false);
       }
     };
 
-    fetchProfile(); // Fetch the profile on component mount
-  }, []); // Empty dependency array to only run on component mount
+    fetchProfile();
+  }, []);
 
-  // Log the profile data when it's updated
-  console.log("Current Profile: ", profile);
-
-  const handleEdit = () => {
-    setIsEditing(true);
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
   };
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("jwtToken");
-      const response = await axios.put("/api/profile", editedProfile, {
-        headers: { Authorization: `Bearer ${token}` },
+      setLoading(true);
+      setError(null);
+
+      let uploadedImageUrl = profile.profilePicture;
+
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append("profilePicture", selectedImage);
+
+        const imageResponse = await axios.post("/api/profile/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // Ensure cookies are sent
+        });
+
+        if (imageResponse.data.success) {
+          uploadedImageUrl = imageResponse.data.imageUrl;
+        } else {
+          throw new Error("Image upload failed");
+        }
+      }
+
+      const updatedProfile = {
+        ...editedProfile,
+        profilePicture: uploadedImageUrl,
+      };
+
+      const response = await axios.put("/api/profile", updatedProfile, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true, // Ensure cookies are sent
       });
+
       if (response.data.success) {
-        setProfile(response.data.user);  // Update profile after save
+        setProfile(response.data.user);
+        setEditedProfile(response.data.user);
+        setSelectedImage(null);
         setIsEditing(false);
-      } else {
-        console.error("Failed to save profile");
       }
     } catch (error) {
       console.error("Error saving profile:", error);
+      setError(error.response?.data?.message || "Failed to save profile");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,7 +105,7 @@ export default function ProfileCard() {
         p={6}
         maxW={"500px"}
         w={"full"}
-        bg={useColorModeValue("white", "gray.800")}
+        bg={"white"}
         boxShadow={"lg"}
         rounded={"lg"}
         pos={"relative"}
@@ -92,66 +114,40 @@ export default function ProfileCard() {
         _hover={{ transform: "scale(1.05)", boxShadow: "xl" }}
       >
         <Flex align={"center"} direction={"column"}>
-          {/* Profile Image */}
-          <Box
-            rounded={"full"}
-            overflow={"hidden"}
-            height={"150px"}
-            width={"150px"}
-            boxShadow={"md"}
-            mb={4}
-          >
+          <Box rounded={"full"} overflow={"hidden"} height={"150px"} width={"150px"} boxShadow={"md"} mb={4}>
             {loading ? (
               <Spinner size="xl" />
+            ) : selectedImage ? (
+              <Image height={"full"} width={"full"} objectFit={"cover"} src={URL.createObjectURL(selectedImage)} alt="Profile Preview" />
             ) : profile.profilePicture ? (
-              <Image
-                height={"full"}
-                width={"full"}
-                objectFit={"cover"}
-                src={profile.profilePicture}
-                alt="Profile"
-              />
+              <Image height={"full"} width={"full"} objectFit={"cover"} src={profile.profilePicture} alt="Profile" />
             ) : (
-              <Box
-                height={"full"}
-                width={"full"}
-                bg={"gray.200"}
-                borderRadius="full"
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-              >
+              <Box height={"full"} width={"full"} bg={"gray.200"} borderRadius="full" display="flex" justifyContent="center" alignItems="center">
                 <Text>No Image</Text>
               </Box>
             )}
           </Box>
 
-          {/* Profile Details */}
+          {isEditing && <Input type="file" accept="image/*" onChange={handleImageChange} mt={2} size="sm" />}
+
           <Stack align={"center"} spacing={2}>
             {isEditing ? (
               <Input
                 value={editedProfile.fullName}
-                onChange={(e) =>
-                  setEditedProfile({ ...editedProfile, fullName: e.target.value })
-                }
+                onChange={(e) => setEditedProfile({ ...editedProfile, fullName: e.target.value })}
                 fontSize={"2xl"}
                 fontWeight={600}
                 textAlign={"center"}
               />
             ) : (
-              <Heading fontSize={"2xl"} fontWeight={600}>
+              <Text fontSize={"2xl"} fontWeight={600}>
                 {profile.fullName || "No Name Provided"}
-              </Heading>
+              </Text>
             )}
             {isEditing ? (
               <Textarea
                 value={editedProfile.bio}
-                onChange={(e) =>
-                  setEditedProfile({
-                    ...editedProfile,
-                    bio: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
                 fontSize={"md"}
                 textAlign={"center"}
               />
@@ -162,74 +158,18 @@ export default function ProfileCard() {
             )}
           </Stack>
 
-          {/* Social Media Links */}
-          {profile.socialLinks ? (
-            <Flex mt={4} gap={4}>
-              {profile.socialLinks.instagram && (
-                <Button
-                  as="a"
-                  href={profile.socialLinks.instagram}
-                  target="_blank"
-                  colorScheme="pink"
-                  size="sm"
-                  rounded="full"
-                >
-                  <FaSquareInstagram />
-                </Button>
-              )}
-              {profile.socialLinks.facebook && (
-                <Button
-                  as="a"
-                  href={profile.socialLinks.facebook}
-                  target="_blank"
-                  colorScheme="blue"
-                  size="sm"
-                  rounded="full"
-                >
-                  <FaFacebookF />
-                </Button>
-              )}
-              {profile.socialLinks.twitter && (
-                <Button
-                  as="a"
-                  href={profile.socialLinks.twitter}
-                  target="_blank"
-                  colorScheme="gray"
-                  size="sm"
-                  rounded="full"
-                >
-                  <FaXTwitter />
-                </Button>
-              )}
-            </Flex>
-          ) : (
-            <Text color={"gray.500"} fontSize={"sm"} textAlign={"center"}>
-              No social links available
+          {error && (
+            <Text color="red.500" mt={2}>
+              {error}
             </Text>
           )}
 
-          {/* Edit Profile Button */}
           {isEditing ? (
-            <Button
-              mt={6}
-              colorScheme="green"
-              size="md"
-              rounded="full"
-              px={6}
-              onClick={handleSave}
-            >
+            <Button mt={6} colorScheme="green" size="md" rounded="full" px={6} onClick={handleSave} isLoading={loading}>
               Save Profile
             </Button>
           ) : (
-            <Button
-              mt={6}
-              colorScheme="blue"
-              size="md"
-              rounded="full"
-              px={6}
-              _hover={{ bg: "blue.600" }}
-              onClick={handleEdit}
-            >
+            <Button mt={6} colorScheme="blue" size="md" rounded="full" px={6} onClick={() => setIsEditing(true)}>
               Edit Profile
             </Button>
           )}
